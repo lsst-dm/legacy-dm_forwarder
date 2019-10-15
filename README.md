@@ -1,2 +1,2 @@
-# dm_forwarder
-repository for the lsst forwarder
+# dm_Forwarder
+Forwarder application for transferring fitsfiles
