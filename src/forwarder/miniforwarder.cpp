@@ -144,6 +144,8 @@ void miniforwarder::health_check(const YAML::Node& n) {
 
 void miniforwarder::xfer_params(const YAML::Node& n) {
     try { 
+        publish_ack(n);
+
         const std::string image_id = n["IMAGE_ID"].as<std::string>();
         xfer_info xfer;
         xfer.target = n["TARGET_LOCATION"].as<std::string>();
@@ -155,7 +157,6 @@ void miniforwarder::xfer_params(const YAML::Node& n) {
         xfer.ccds = params["RAFT_CCD_LIST"].as<std::vector<std::string>>();
 
         _db->add_xfer(image_id, xfer);
-        publish_ack(n);
     }
     catch (std::exception& e) { 
         LOG_CRT << e.what();
@@ -164,6 +165,8 @@ void miniforwarder::xfer_params(const YAML::Node& n) {
 
 void miniforwarder::header_ready(const YAML::Node& n) {
     try { 
+        publish_ack(n);
+
         const std::string filename = n["FILENAME"].as<std::string>();
         const std::string image_id = n["IMAGE_ID"].as<std::string>();
         const std::string reply_q = n["REPLY_QUEUE"].as<std::string>();
@@ -173,7 +176,6 @@ void miniforwarder::header_ready(const YAML::Node& n) {
         _hdr.fetch(filename, header);
         _db->add(image_id, "header_ready");
         assemble(image_id);
-        publish_ack(n);
     }
     catch (L1::CannotFetchHeader& e) { }
     catch (std::exception& e) { 
@@ -183,6 +185,8 @@ void miniforwarder::header_ready(const YAML::Node& n) {
 
 void miniforwarder::end_readout(const YAML::Node& n) {
     try { 
+        publish_ack(n);
+
         const std::string image_id = n["IMAGE_ID"].as<std::string>();
         const xfer_info xfer = _db->get_xfer(image_id);
         const std::string raft = xfer.raft;
@@ -202,7 +206,6 @@ void miniforwarder::end_readout(const YAML::Node& n) {
 
         _db->add(image_id, "end_readout");
         assemble(image_id);
-        publish_ack(n);
     }
     catch (L1::KeyNotFound& e) { }
     catch (L1::CannotFetchPixel& e) { }
