@@ -74,10 +74,11 @@ std::ostream& operator<< (std::ostream& strm, severity_level level);
  */
 void init_log(const std::string& filepath, const std::string& filename);
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define LOGGER(lg_, sev) BOOST_LOG_SEV(lg_, sev) \
     << std::left\
     << "    "\
-    << std::setw(30) << std::setfill(' ') << __FILE__\
+    << std::setw(30) << std::setfill(' ') << __FILENAME__\
     << std::setw(30) << std::setfill(' ') << __FUNCTION__\
     << std::setw(5) << std::setfill(' ') << __LINE__\
     << "    "
