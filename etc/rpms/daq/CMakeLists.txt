@@ -1,22 +1,31 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(daq VERSION 2.7.0)
-
-set(TAR_GZ "R2-V2.7")
+project(daq VERSION ${Daq_VERSION})
 
 include(ExternalProject)
+
 ExternalProject_Add(
     ${PROJECT_NAME}
-    URL "${LSST_REPO}/${PROJECT_NAME}/${TAR_GZ}.tgz"
+    URL "${Daq_URL}"
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
 )
 ExternalProject_Get_property(${PROJECT_NAME} SOURCE_DIR)
+message(status ${SOURCE_DIR})
 
 install(
-    DIRECTORY ${SOURCE_DIR} 
-    DESTINATION daq
-    COMPONENT DAQ
-    USE_SOURCE_PERMISSIONS
+    DIRECTORY ${SOURCE_DIR}/x86/lib/
+    DESTINATION lib64
+    COMPONENT daq
+)
+install(
+    DIRECTORY ${SOURCE_DIR}/include/
+    DESTINATION include
+    COMPONENT daq
+)
+install(
+    DIRECTORY ${SOURCE_DIR}/x86/bin/
+    DESTINATION bin/daq
+    COMPONENT daq
 )
