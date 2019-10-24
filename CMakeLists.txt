@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
-
 project(dm_forwarder VERSION 2.1.0)
+enable_testing()
 
 option(RPMS "Build rpms" OFF)
 
@@ -72,6 +72,7 @@ else()
     set(FWD_COMPONENTS "dm_forwarder")
     add_subdirectory("./src/core")
     add_subdirectory("./src/forwarder")
+    add_subdirectory("./tests")
 endif()
 
 # Cpack Specs
@@ -86,7 +87,6 @@ set(CPACK_RPM_DAQ_PACKAGE_REQUIRES "gcc-c++")
 set(CPACK_RPM_DAQ_PACKAGE_PROVIDES 
     "libdaq_ims.so,libdaq_daq.so,libdaq_dsi.so")
 set(CPACK_RPM_DAQ_PACKAGE_ARCHITECTURE x86_64)
-#set(CPACK_RPM_DAQ_PACKAGE_AUTOREQ 0)
 
 # SimpleAmqpClient config
 set(CPACK_RPM_SIMPLEAMQPCLIENT_FILE_NAME 
@@ -107,7 +107,5 @@ set(CPACK_RPM_CFITSIO_PACKAGE_NAME "lsst-cfitsio")
 set(CPACK_RPM_DM_FORWARDER_FILE_NAME 
     "dm_forwarder-${PROJECT_VERSION}-x86_64.rpm")
 set(CPACK_RPM_DM_FORWARDER_PACKAGE_NAME "dm_forwarder")
-set(CPACK_RPM_DM_FORWARDER_PACKAGE_REQUIRES 
-    "boost169-devel, lsst-daq")
 
 include(CPack)
