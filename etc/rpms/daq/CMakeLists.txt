@@ -12,23 +12,17 @@ ExternalProject_Add(
     INSTALL_COMMAND ""
 )
 ExternalProject_Get_property(${PROJECT_NAME} SOURCE_DIR)
-message(status ${SOURCE_DIR})
 
 install(
-    DIRECTORY ${SOURCE_DIR}/x86/lib/
-    DESTINATION lib64
+    DIRECTORY ${SOURCE_DIR}/x86/
+    DESTINATION /opt/lsst/daq/x86
     COMPONENT daq
     USE_SOURCE_PERMISSIONS
 )
+
 install(
     DIRECTORY ${SOURCE_DIR}/include/
-    DESTINATION include
-    COMPONENT daq
-    USE_SOURCE_PERMISSIONS
-)
-install(
-    DIRECTORY ${SOURCE_DIR}/x86/bin/
-    DESTINATION bin/daq
+    DESTINATION /opt/lsst/daq/include
     COMPONENT daq
     USE_SOURCE_PERMISSIONS
 )
