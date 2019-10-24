@@ -18,14 +18,17 @@ install(
     DIRECTORY ${SOURCE_DIR}/x86/lib/
     DESTINATION lib64
     COMPONENT daq
+    USE_SOURCE_PERMISSIONS
 )
 install(
     DIRECTORY ${SOURCE_DIR}/include/
     DESTINATION include
     COMPONENT daq
+    USE_SOURCE_PERMISSIONS
 )
 install(
     DIRECTORY ${SOURCE_DIR}/x86/bin/
     DESTINATION bin/daq
     COMPONENT daq
+    USE_SOURCE_PERMISSIONS
 )

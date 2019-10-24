@@ -40,16 +40,12 @@ target_include_directories(iip_forwarder PUBLIC
     "../../include"
 )
 
-target_link_directories(iip_forwarder PUBLIC
-    "/usr/lib64/daq"
-)
-
 target_link_libraries(iip_forwarder PUBLIC
     lsst_iip_forwarder
     lsst_iip_core
-    daq_ims
-    daq_daq
-    daq_dsi
+    /usr/lib64/libdaq_ims.so
+    /usr/lib64/libdaq_daq.so
+    /usr/lib64/libdaq_dsi.so
     "${boost_log}"
     "${boost_thread}"
     "${boost_filesystem}"
