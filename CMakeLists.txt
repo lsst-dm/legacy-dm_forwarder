@@ -107,5 +107,7 @@ set(CPACK_RPM_CFITSIO_PACKAGE_NAME "lsst-cfitsio")
 set(CPACK_RPM_DM_FORWARDER_FILE_NAME 
     "dm_forwarder-${PROJECT_VERSION}-x86_64.rpm")
 set(CPACK_RPM_DM_FORWARDER_PACKAGE_NAME "dm_forwarder")
+set(CPACK_RPM_DM_FORWARDER_POST_INSTALL_SCRIPT_FILE 
+    ${CMAKE_SOURCE_DIR}/bin/postinstall.sh)
 
 include(CPack)

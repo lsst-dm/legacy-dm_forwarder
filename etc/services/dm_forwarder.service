@@ -1,0 +1,15 @@
+[Unit]
+Description=LSST dm_forwarder Service
+Requires=multi-user.target
+
+[Service]
+User=iip
+Group=iip
+Type=simple
+Environment=LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/lsst/daq/x86/lib:/usr/lib
+Environment=IIP_CONFIG_DIR=/opt/lsst/dm_forwarder/config
+ExecStart=/opt/lsst/dm_forwarder/bin/dm_forwarder
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
