@@ -39,74 +39,93 @@ miniforwarder::miniforwarder(const std::string& config,
                                  , _fmt()
                                  , _readoutpattern(_config_root)
                                  , _sender() { 
+    std::string work_dir, ip_host, redis_host;
+    int redis_port, redis_db;
     try { 
-        // rabbitmq configuration
-        const std::string user = _credentials->get_user("service_user");
-        const std::string passwd = _credentials->get_user("service_passwd");
-        const std::string ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
-        _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
-        _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
-
-        // cfitsio configuration
-        const std::string header_dir = _config_root["HEADER_PATH"].as<std::string>();
-        const std::string fits_dir = _config_root["FITS_PATH"].as<std::string>();
-
-        // redis configuration
-        const std::string redis_host = _config_root["REDIS_HOST"].as<std::string>();
-        const int redis_port = _config_root["REDIS_PORT"].as<int>();
-        const int redis_db = _config_root["REDIS_DB"].as<int>();
-        const std::string redis_pwd = "meh"; // should come from credentials
-
-        // heartbeat configuration
-        _set_timeout = _config_root["SET_TIMEOUT"].as<int>();
-        _check_timeout = _config_root["CHECK_TIMEOUT"].as<int>();
-
-        // daq configuration
+        _name = _config_root["NAME"].as<std::string>();
+        work_dir = _config_root["WORK_DIR"].as<std::string>();
         _partition = _config_root["PARTITION"].as<std::string>();
         _daq_locations = _config_root[_partition].as<std::vector<std::string>>();
+        ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
+        _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
+        _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
+        redis_host = _config_root["REDIS_HOST"].as<std::string>();
+        redis_port = _config_root["REDIS_PORT"].as<int>();
+        redis_db = _config_root["REDIS_DB"].as<int>();
+        _set_timeout = _config_root["SET_TIMEOUT"].as<int>();
+        _check_timeout = _config_root["CHECK_TIMEOUT"].as<int>();
+    }
+    catch (YAML::TypedBadConversion<std::string>& e) { 
+        LOG_CRT << "YAML bad conversion for std::string";
+        exit(EXIT_FAILURE); 
+    }
+    catch (YAML::TypedBadConversion<int>& e) { 
+        LOG_CRT << "YAML bad conversion for int";
+        exit(EXIT_FAILURE); 
+    }
+    catch (YAML::TypedBadConversion<std::vector<std::string>>& e) { 
+        LOG_CRT << "YAML bad conversion for vector<string>";
+        exit(EXIT_FAILURE); 
+    }
 
-        _name = _config_root["NAME"].as<std::string>();
-        _amqp_url = "amqp://" + user + ":" + passwd + "@" + ip_host;
+    const std::string user = _credentials->get_user("service_user");
+    const std::string passwd = _credentials->get_user("service_passwd");
+    _amqp_url = "amqp://" + user + ":" + passwd + "@" + ip_host;
 
-        _actions = {
-            { "AT_FWDR_HEALTH_CHECK", std::bind(&miniforwarder::health_check, this, std::placeholders::_1) },
-            { "AT_FWDR_XFER_PARAMS", std::bind(&miniforwarder::xfer_params, this, std::placeholders::_1) },
-            { "AT_FWDR_HEADER_READY", std::bind(&miniforwarder::header_ready, this, std::placeholders::_1) },
-            { "AT_FWDR_END_READOUT", std::bind(&miniforwarder::end_readout, this, std::placeholders::_1) },
-            { "FILE_TRANSFER_COMPLETED_ACK", std::bind(&miniforwarder::process_ack, this, std::placeholders::_1) },
-            { "ASSOCIATED", std::bind(&miniforwarder::associated, this, std::placeholders::_1) }
-        };
-
-        _pub = std::unique_ptr<SimplePublisher>(new SimplePublisher(_amqp_url));
-        _db = std::unique_ptr<Scoreboard>(
-                new Scoreboard(redis_host, redis_port, redis_db, redis_pwd));
-        _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition.c_str()));
-
+    try { 
+        const fs::path header_dir = fs::path(work_dir) / fs::path("header"); 
+        const fs::path fits_dir = fs::path(work_dir) / fs::path("fits");
         _header_path = create_dir(header_dir);
         _fits_path = create_dir(fits_dir);
-
-        _forwarder_list = "forwarder_list";
-        _association_key = "f99_association";
-        
-        auto bound_register_fwd = std::bind(&miniforwarder::register_fwd, this); 
-        _hb_params.timeout = _set_timeout;
-        _hb_params.key = _association_key;
-        _hb_params.redis_host = redis_host;
-        _hb_params.redis_port = redis_port;
-        _hb_params.redis_db = redis_db;
-        _hb_params.action = bound_register_fwd;
-
-        register_fwd();
-
-        _beacon = std::unique_ptr<Beacon>(new Beacon(_hb_params));
-        _watcher = std::unique_ptr<Watcher>(new Watcher());
+    } 
+    catch (L1::CannotCreateDir& e) { 
+        exit(EXIT_FAILURE); 
     }
-    catch (L1::PublisherError& e) { exit(-1); }
-    catch (L1::CannotCreateDir& e) { exit(-1); }
-    catch (std::exception& e) { 
-        LOG_CRT << e.what();
-        exit(-1);
+
+    // TODO
+    const std::string redis_pwd = "meh";
+
+    _actions = {
+        { "AT_FWDR_HEALTH_CHECK", std::bind(&miniforwarder::health_check, 
+                this, std::placeholders::_1) },
+        { "AT_FWDR_XFER_PARAMS", std::bind(&miniforwarder::xfer_params, 
+                this, std::placeholders::_1) },
+        { "AT_FWDR_HEADER_READY", std::bind(&miniforwarder::header_ready, 
+                this, std::placeholders::_1) },
+        { "AT_FWDR_END_READOUT", std::bind(&miniforwarder::end_readout, 
+                this, std::placeholders::_1) },
+        { "FILE_TRANSFER_COMPLETED_ACK", std::bind(&miniforwarder::process_ack, 
+                this, std::placeholders::_1) },
+        { "ASSOCIATED", std::bind(&miniforwarder::associated, 
+                this, std::placeholders::_1) }
+    };
+
+    try {
+        _pub = std::unique_ptr<SimplePublisher>(new SimplePublisher(_amqp_url));
+    } 
+    catch (L1::PublisherError& e) { 
+        exit(EXIT_FAILURE); 
     }
+
+    _db = std::unique_ptr<Scoreboard>(
+            new Scoreboard(redis_host, redis_port, redis_db, redis_pwd));
+    _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition.c_str()));
+
+    _forwarder_list = "forwarder_list";
+    _association_key = "f99_association";
+    
+    auto bound_register_fwd = std::bind(&miniforwarder::register_fwd, this); 
+    _hb_params.timeout = _set_timeout;
+    _hb_params.key = _association_key;
+    _hb_params.redis_host = redis_host;
+    _hb_params.redis_port = redis_port;
+    _hb_params.redis_db = redis_db;
+    _hb_params.action = bound_register_fwd;
+
+    register_fwd();
+
+    _beacon = std::unique_ptr<Beacon>(new Beacon(_hb_params));
+    _watcher = std::unique_ptr<Watcher>(new Watcher());
 }
 
 miniforwarder::~miniforwarder() { 
@@ -312,10 +331,13 @@ void miniforwarder::assemble(const std::string& image_id) {
     }
 }
 
-fs::path miniforwarder::create_dir(const std::string& root) { 
-    fs::path file_path(root);
-
+fs::path miniforwarder::create_dir(const fs::path& file_path) { 
     boost::system::error_code err;
+
+    // The status is not that useful. status == false doesn't mean directory
+    // creation failed but it means boost::filesystem didn't create that 
+    // directory. In other words, if the directory already exists, status will 
+    // be false, regardless of who created it.
     bool status = create_directories(file_path, err);
 
     if (err.value()) {
