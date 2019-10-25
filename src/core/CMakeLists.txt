@@ -1,13 +1,6 @@
 cmake_minimum_required (VERSION 3.6)
 project (lsst_iip_core)
 
-# c++11 support
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-
 # Build core objects
 set(OBJ
     "Beacon.cpp"

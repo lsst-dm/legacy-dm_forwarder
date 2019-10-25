@@ -23,18 +23,20 @@
 
 #include <iostream>
 
-class MessageBuilder { 
+class MessageBuilder {
     public:
-        const std::string build_ack(const std::string& msg_type, 
-                                    const std::string& component, 
-                                    const std::string& ack_id, 
-                                    const std::string& ack_bool);
-        const std::string build_xfer_complete(const std::string& filename,
-                                              const std::string& session_id,
-                                              const std::string& job_num,
-                                              const std::string& reply_q);
-        const std::string build_associated_ack(const std::string& key);
-        const std::string build_fwd_info(const std::string& hostname,
-                                         const std::string& ip_addr,
-                                         const std::string& consume_q);
+        std::string build_ack(const std::string& msg_type,
+                              const std::string& component,
+                              const std::string& ack_id,
+                              const std::string& ack_bool);
+        std::string build_xfer_complete(const std::string& filename,
+                                        const std::string& session_id,
+                                        const std::string& job_num,
+                                        const std::string& reply_q);
+        std::string build_associated_ack(const std::string& key);
+        std::string build_fwd_info(const std::string& hostname,
+                                   const std::string& ip_addr,
+                                   const std::string& consume_q);
+        std::string build_processing_status(const int& code,
+                                            const std::string& desc);
 };

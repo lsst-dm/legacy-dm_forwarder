@@ -1,13 +1,6 @@
 cmake_minimum_required (VERSION 3.1)
 project (lsst_dm_forwarder)
 
-# c++11 support
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-
 # Build forwarder objects
 set(OBJ
     "CURLHandle.cpp"
@@ -26,8 +19,8 @@ set(OBJ
 )
 
 add_library(lsst_dm_forwarder STATIC ${OBJ})
-target_compile_definitions(lsst_dm_forwarder PUBLIC BOOST_LOG_DYN_LINK)
-target_include_directories(lsst_dm_forwarder PUBLIC
+target_compile_definitions(lsst_dm_forwarder PRIVATE BOOST_LOG_DYN_LINK)
+target_include_directories(lsst_dm_forwarder PRIVATE
     "${Boost_INCLUDE_DIRS}"
     "${Daq_INCLUDE_DIRS}"
     "../../include"
@@ -35,14 +28,14 @@ target_include_directories(lsst_dm_forwarder PUBLIC
 
 # Build forwarder executable
 add_executable(dm_forwarder main.cpp)
-target_compile_definitions(dm_forwarder PUBLIC BOOST_LOG_DYN_LINK)
-target_include_directories(dm_forwarder PUBLIC
+target_compile_definitions(dm_forwarder PRIVATE BOOST_LOG_DYN_LINK)
+target_include_directories(dm_forwarder PRIVATE
     "${Boost_INCLUDE_DIRS}"
     "${Daq_INCLUDE_DIRS}"
     "../../include"
 )
 
-target_link_libraries(dm_forwarder PUBLIC
+target_link_libraries(dm_forwarder PRIVATE
     lsst_dm_forwarder
     lsst_iip_core
     ${daq_ims}

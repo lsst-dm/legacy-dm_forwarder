@@ -4,6 +4,14 @@ enable_testing()
 
 option(RPMS "Build rpms" OFF)
 
+# c++11 support
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
+
 set(LSST_REPO "http://lsst-web.ncsa.illinois.edu/~hwin16/packages")
 set(LSST_INSTALL_DIR "/opt/lsst")
 

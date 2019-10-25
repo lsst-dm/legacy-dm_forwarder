@@ -6,8 +6,6 @@ LOGGING_DIR: /var/log/iip
 
 # working directory where cfitio and header files are fetched/assembled
 WORK_DIR: /var/tmp/data
-#HEADER_PATH: /tmp/header
-#FITS_PATH: /tmp/source
 
 # daq partition name
 PARTITION: ats
@@ -39,6 +37,9 @@ CONSUME_QUEUE: f99_consume
 
 # rabbitMQ archivecontroller queue
 ARCHIVE_QUEUE: archive_ctrl_consume
+
+# telemetry queue for publishing telemetry messages from forwarder
+TELEMETRY_QUEUE: telemetry_queue
 
 # redis database configuration for handling heartbeat and storing information
 REDIS_HOST: 141.142.238.15

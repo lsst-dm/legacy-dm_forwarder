@@ -40,21 +40,26 @@ struct miniforwarderFixture : IIPBase {
 
     std::unique_ptr<miniforwarder> _fwd;
     YAML::Node _d;
-    std::string _log_dir; 
+    std::string _log_dir;
 
-    miniforwarderFixture() : IIPBase("ForwarderCfg.yaml", "test"){ 
+    miniforwarderFixture() : IIPBase("ForwarderCfg.yaml", "test"){
         BOOST_TEST_MESSAGE("Setup miniforwarder fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
 
         _fwd = std::unique_ptr<miniforwarder>(
                 new miniforwarder("ForwarderCfg.yaml", "test"));
 
-        _d = YAML::LoadFile("./data/test_data.yaml");
+        const char* env = getenv("IIP_TEST_DATA_DIR");
+        if (env == NULL) {
+            BOOST_FAIL("IIP_TEST_DATA_DIR env variable is not set");
+        }
+
+        _d = YAML::LoadFile(std::string(env) + "/test_data.yaml");
     }
 
-    YAML::Node build_xfer_params(std::string& image_id, 
-                                 std::string& raft, 
-                                 std::vector<std::string>& ccds) { 
+    YAML::Node build_xfer_params(std::string& image_id,
+                                 std::string& raft,
+                                 std::vector<std::string>& ccds) {
         YAML::Node sub;
         sub["RAFT_LIST"] = raft;
         sub["RAFT_CCD_LIST"] = ccds;
@@ -73,7 +78,7 @@ struct miniforwarderFixture : IIPBase {
         return d;
     }
 
-    YAML::Node build_end_readout(std::string& image_id) { 
+    YAML::Node build_end_readout(std::string& image_id) {
         YAML::Node d;
         d["MSG_TYPE"] = "AT_FWDR_END_READOUT";
         d["JOB_NUM"] = _d["JOB_NUM"];
@@ -86,7 +91,7 @@ struct miniforwarderFixture : IIPBase {
         return d;
     }
 
-    ~miniforwarderFixture() { 
+    ~miniforwarderFixture() {
         BOOST_TEST_MESSAGE("TearDown miniforwarder fixture");
         std::string log = _log_dir + "/test.log.0";
         std::remove(log.c_str());
@@ -99,7 +104,8 @@ BOOST_AUTO_TEST_CASE(end_readout) {
     std::string image_id = _d["IMAGE_ID"].as<std::string>();
     std::string raft = _d["RAFT_LIST"].as<std::string>();
     std::vector<std::string> ccds = _d["RAFT_CCD_LIST"].as<std::vector<std::string>>();
-    std::string fitspath = _config_root["FITS_PATH"].as<std::string>();
+    std::string work_dir = _config_root["WORK_DIR"].as<std::string>();
+    std::string fitspath = work_dir + "/fits";
 
     /**
      * end readout without start integration
@@ -135,7 +141,7 @@ BOOST_AUTO_TEST_CASE(end_readout) {
      */
     std::vector<std::string> bad_ccds{ "09" };
     YAML::Node xfer_bad_ccds = build_xfer_params(image_id, raft, bad_ccds);
-    _fwd->xfer_params(xfer_bad_ccds); 
+    _fwd->xfer_params(xfer_bad_ccds);
 
     YAML::Node er_bad_ccd = build_end_readout(image_id);
     BOOST_CHECK_NO_THROW(_fwd->end_readout(er_bad_ccd));
@@ -149,7 +155,7 @@ BOOST_AUTO_TEST_CASE(end_readout) {
     YAML::Node n = build_end_readout(image_id);
     _fwd->end_readout(n);
 
-    for (auto& ccd : ccds) { 
+    for (auto& ccd : ccds) {
         std::string filename = image_id + "--R" + raft + "S" + ccd + ".fits";
         fs::path filepath = fs::path(fitspath) / fs::path(filename);
 
@@ -165,6 +171,10 @@ BOOST_AUTO_TEST_CASE(check_valid_board) {
     BOOST_CHECK_EQUAL(_fwd->check_valid_board("00", "00"), true);
     BOOST_CHECK_EQUAL(_fwd->check_valid_board("00", "11"), false);
     BOOST_CHECK_EQUAL(_fwd->check_valid_board("1111", "00"), false);
+}
+
+BOOST_AUTO_TEST_CASE(publish_processing_status) {
+    BOOST_CHECK_NO_THROW(_fwd->publish_processing_status(100, "hello world"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

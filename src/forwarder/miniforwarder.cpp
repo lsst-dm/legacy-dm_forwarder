@@ -48,6 +48,7 @@ miniforwarder::miniforwarder(const std::string& config,
         _daq_locations = _config_root[_partition].as<std::vector<std::string>>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
+        _telemetry_q = _config_root["TELEMETRY_QUEUE"].as<std::string>();
         _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
         redis_host = _config_root["REDIS_HOST"].as<std::string>();
         redis_port = _config_root["REDIS_PORT"].as<int>();
@@ -196,9 +197,14 @@ void miniforwarder::header_ready(const YAML::Node& n) {
         _db->add(image_id, "header_ready");
         assemble(image_id);
     }
-    catch (L1::CannotFetchHeader& e) { }
+    catch (L1::CannotFetchHeader& e) { 
+        int error_code = 5610;
+        publish_processing_status(error_code, e.what()); 
+    }
     catch (std::exception& e) { 
         LOG_CRT << e.what();
+        int error_code = 5610;
+        publish_processing_status(error_code, e.what()); 
     }
 }
 
@@ -212,7 +218,8 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         const std::vector<std::string> ccds = xfer.ccds;
 
         for (auto& ccd : ccds) { 
-            const std::string filename = image_id + "--R" + raft + "S" + ccd + ".fits";
+            const std::string filename = image_id + "--R" + raft + 
+                "S" + ccd + ".fits";
             const fs::path filepath = _fits_path / fs::path(filename);
             if (!check_valid_board(raft, ccd)) { 
                 std::string err = "Raft/ccd " + raft + "/" + ccd + 
@@ -226,10 +233,18 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         _db->add(image_id, "end_readout");
         assemble(image_id);
     }
-    catch (L1::KeyNotFound& e) { }
-    catch (L1::CannotFetchPixel& e) { }
+    catch (L1::KeyNotFound& e) { 
+        int error_code = 5611;
+        publish_processing_status(error_code, e.what()); 
+    }
+    catch (L1::CannotFetchPixel& e) {
+        int error_code = 5611;
+        publish_processing_status(error_code, e.what()); 
+    }
     catch (std::exception& e) { 
         LOG_CRT << e.what();
+        int error_code = 5611;
+        publish_processing_status(error_code, e.what()); 
     }
 }
 
@@ -291,6 +306,15 @@ void miniforwarder::publish_xfer_complete(const std::string& to,
     }
 }
 
+void miniforwarder::publish_processing_status(const int& error_code,
+                                              const std::string& desc) {
+    const std::string msg = _builder.build_processing_status(error_code, desc);
+    try { 
+        _pub->publish_message(_telemetry_q, msg);
+    }
+    catch (L1::PublisherError& e) {}
+}
+
 void miniforwarder::assemble(const std::string& image_id) { 
     try { 
         if (_db->is_ready(image_id)) { 
@@ -302,7 +326,8 @@ void miniforwarder::assemble(const std::string& image_id) {
             const fs::path header = _header_path / fs::path(image_id);
 
             for (auto& ccd : ccds) { 
-                const std::string filename = image_id + "--R" + raft + "S" + ccd + ".fits";
+                const std::string filename = image_id + "--R" + raft + 
+                    "S" + ccd + ".fits";
                 const fs::path pix = _fits_path / fs::path(filename);
                 const fs::path to = fs::path(xfer.target) / fs::path(filename);
 
@@ -320,14 +345,28 @@ void miniforwarder::assemble(const std::string& image_id) {
             std::remove(header.c_str());
         }
     }
-    catch (L1::KeyNotFound& e) { }
-    catch (L1::InvalidReadoutPattern& e) { }
-    catch (L1::CannotFormatFitsfile& e) { }
-    catch (L1::CannotCopyFile& e) { } 
+    catch (L1::KeyNotFound& e) {
+        int error_code = 5612;
+        publish_processing_status(error_code, e.what()); 
+    }
+    catch (L1::InvalidReadoutPattern& e) {
+        int error_code = 5612;
+        publish_processing_status(error_code, e.what()); 
+    }
+    catch (L1::CannotFormatFitsfile& e) {
+        int error_code = 5612;
+        publish_processing_status(error_code, e.what()); 
+    }
+    catch (L1::CannotCopyFile& e) {
+        int error_code = 5612;
+        publish_processing_status(error_code, e.what()); 
+    } 
     catch (std::exception& e) { 
         std::string err = "Cannot assemble fitsfile because " + 
             std::string(e.what());
         LOG_CRT << err; 
+        int error_code = 5612;
+        publish_processing_status(error_code, e.what()); 
     }
 }
 

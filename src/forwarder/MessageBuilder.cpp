@@ -24,53 +24,52 @@
 #include <yaml-cpp/yaml.h>
 #include "forwarder/MessageBuilder.h"
 
-const std::string MessageBuilder::build_ack(const std::string& msg_type, 
-                                            const std::string& component, 
-                                            const std::string& ack_id, 
-                                            const std::string& ack_bool) { 
-    YAML::Emitter msg; 
+std::string MessageBuilder::build_ack(const std::string& msg_type,
+                                      const std::string& component,
+                                      const std::string& ack_id,
+                                      const std::string& ack_bool) {
+    YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
-    msg << YAML::BeginMap; 
-    msg << YAML::Key << "MSG_TYPE" << YAML::Value << msg_type + "_ACK"; 
-    msg << YAML::Key << "COMPONENT" << YAML::Value << component; 
-    msg << YAML::Key << "ACK_ID" << YAML::Value << ack_id; 
-    msg << YAML::EndMap; 
+    msg << YAML::BeginMap;
+    msg << YAML::Key << "MSG_TYPE" << YAML::Value << msg_type + "_ACK";
+    msg << YAML::Key << "COMPONENT" << YAML::Value << component;
+    msg << YAML::Key << "ACK_ID" << YAML::Value << ack_id;
+    msg << YAML::EndMap;
     return std::string(msg.c_str());
 }
 
-const std::string MessageBuilder::build_xfer_complete(const std::string& filename,
-                                                      const std::string& session_id,
-                                                      const std::string& job_num,
-                                                      const std::string& reply_q) { 
-
-    YAML::Emitter msg; 
+std::string MessageBuilder::build_xfer_complete(const std::string& filename,
+                                                const std::string& session_id,
+                                                const std::string& job_num,
+                                                const std::string& reply_q) {
+    YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
-    msg << YAML::BeginMap; 
-    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "FILE_TRANSFER_COMPLETED"; 
-    msg << YAML::Key << "FILENAME" << YAML::Value << filename; 
-    msg << YAML::Key << "SESSION_ID" << YAML::Value << session_id; 
-    msg << YAML::Key << "JOB_NUM" << YAML::Value << job_num; 
-    msg << YAML::Key << "REPLY_QUEUE" << YAML::Value << reply_q; 
-    msg << YAML::EndMap; 
+    msg << YAML::BeginMap;
+    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "FILE_TRANSFER_COMPLETED";
+    msg << YAML::Key << "FILENAME" << YAML::Value << filename;
+    msg << YAML::Key << "SESSION_ID" << YAML::Value << session_id;
+    msg << YAML::Key << "JOB_NUM" << YAML::Value << job_num;
+    msg << YAML::Key << "REPLY_QUEUE" << YAML::Value << reply_q;
+    msg << YAML::EndMap;
     return std::string(msg.c_str());
 }
 
-const std::string MessageBuilder::build_associated_ack(const std::string& key) { 
-    YAML::Emitter msg; 
+std::string MessageBuilder::build_associated_ack(const std::string& key) {
+    YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
-    msg << YAML::BeginMap; 
-    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "ASSOCIATED_ACK"; 
+    msg << YAML::BeginMap;
+    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "ASSOCIATED_ACK";
     msg << YAML::Key << "ASSOCIATION_KEY" << YAML::Value << key;
-    msg << YAML::EndMap; 
+    msg << YAML::EndMap;
     return std::string(msg.c_str());
 }
 
-const std::string MessageBuilder::build_fwd_info(const std::string& hostname,
+std::string MessageBuilder::build_fwd_info(const std::string& hostname,
                                                  const std::string& ip_addr,
-                                                 const std::string& consume_q) { 
+                                                 const std::string& consume_q) {
     YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
@@ -78,6 +77,19 @@ const std::string MessageBuilder::build_fwd_info(const std::string& hostname,
     msg << YAML::Key << "hostname" << YAML::Value << hostname;
     msg << YAML::Key << "ip_address" << YAML::Value << ip_addr;
     msg << YAML::Key << "consume_queue" << YAML::Value << consume_q;
+    msg << YAML::EndMap;
+    return std::string(msg.c_str());
+}
+
+std::string MessageBuilder::build_processing_status(const int& code,
+                                                    const std::string& desc) {
+    YAML::Emitter msg;
+    msg << YAML::DoubleQuoted;
+    msg << YAML::Flow;
+    msg << YAML::BeginMap;
+    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "TELEMETRY";
+    msg << YAML::Key << "STATUS_CODE" << YAML::Value << code;
+    msg << YAML::Key << "DESCRIPTION" << YAML::Value << desc;
     msg << YAML::EndMap;
     return std::string(msg.c_str());
 }
