@@ -21,6 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
 #include "forwarder/HeaderFetcher.h"
@@ -37,6 +38,12 @@ FileOpener::FileOpener(const fs::path& file) : _remove(false), _filename(file) {
         remove(file.c_str());
     }
     _file = fopen(file.c_str(), "w"); 
+    if (_file == NULL) { 
+        const std::string err = "Cannot open " + file.string() + 
+            " because " + std::string(strerror(errno));
+        LOG_CRT << err;
+        throw L1::CannotOpenFile(err);
+    }
 }
 
 FileOpener::~FileOpener() { 

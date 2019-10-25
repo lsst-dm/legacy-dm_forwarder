@@ -76,7 +76,14 @@ void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) {
         }
         LOG_INF << "Fetched header file from " << url;
     } 
+    catch (L1::CannotOpenFile& e) { 
+        throw L1::CannotFetchHeader(e.what());
+    }
     catch (L1::NoCURLHandle& e) { 
+        throw L1::CannotFetchHeader(e.what());
+    }
+    catch (std::exception& e) { 
+        LOG_CRT << e.what();
         throw L1::CannotFetchHeader(e.what());
     }
 }
