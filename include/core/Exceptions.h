@@ -110,6 +110,14 @@ namespace L1 {
     }; 
 
     /**
+     * Throws when application cannot open file
+     */
+    class CannotOpenFile: public L1Exception { 
+        public: 
+            CannotOpenFile(const std::string& msg) : L1Exception(msg) {} 
+    }; 
+
+    /**
      * Throws when `HeaderFetcher` cannot fetch header file from HeaderService
      */
     class CannotFetchHeader: public L1Exception { 
