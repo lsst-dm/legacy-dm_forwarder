@@ -29,7 +29,7 @@ IIPBase::IIPBase(const std::string& configfilename, const std::string& logfilena
     std::string cfg;
     try { 
         cfg = load_config_file(configfilename);
-        _config_root = YAML::LoadFile(cfg)["ROOT"]; 
+        _config_root = YAML::LoadFile(cfg); 
         init_log(get_log_filepath(), logfilename);
 
         _credentials = std::unique_ptr<Credentials>(new Credentials("iip_cred.yaml"));

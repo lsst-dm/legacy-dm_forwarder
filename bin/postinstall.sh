@@ -3,9 +3,11 @@ id -u iip &> /dev/null || useradd iip
 
 # create directory for logging
 mkdir -p /var/log/iip
-
-# give permission to iip user
 chown -R iip:iip /var/log/iip
+
+# create directory for work dir
+mkdir -p /var/tmp/data
+chown -R iip:iip /var/tmp/data
 
 # reload systemd
 systemctl daemon-reload
