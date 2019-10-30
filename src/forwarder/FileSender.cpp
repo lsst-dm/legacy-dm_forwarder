@@ -29,28 +29,24 @@
 
 namespace fs = boost::filesystem;
 
-void FileSender::send(const fs::path& from, const fs::path& to) { 
-    const char* home = getenv("HOME"); 
-    fs::path private_key = fs::path(home) / fs::path(".ssh/id_rsa");
-    if (!exists(private_key)) { 
-        throw L1::CannotCopyFile("Private key does not exist.");
-    }
+FileSender::FileSender(const std::string& xfer_option) {
+    _xfer_option = xfer_option;
+}
 
-    // -f, forces the copy, if file exists, delete and copy
-    // -n, does not use DNS to resolve IP addresses
+void FileSender::send(const fs::path& from, const fs::path& to) {
     std::ostringstream bbcp;
-    bbcp << "bbcp"
-         << " -f "
-         << " -n "
-         << " -s 1 "
-         << " -i " << private_key << " "
+    bbcp << _xfer_option
+         << " "
          << from.string()
          << " "
          << to.string();
 
     int status = system(bbcp.str().c_str());
-    if (status) { 
-        throw L1::CannotCopyFile("Cannot copy file from " + from.string() + " to " + to.string());
+    if (status) {
+        const std::string err = "Cannot copy file from " + from.string() +
+            " to " + to.string();
+        LOG_CRT << err;
+        throw L1::CannotCopyFile(err);
     }
 
     LOG_INF << "Sent file from " + from.string() + " to " + to.string();

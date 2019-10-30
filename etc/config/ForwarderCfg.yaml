@@ -12,7 +12,7 @@ PARTITION: ats
 
 # @deprecated_soon
 # daq readout order for each sensor, currently WFS is the only one active. This
-# will be deprecated because readout order depends on Science, Wavefront, or 
+# will be deprecated because readout order depends on Science, Wavefront, or
 # Guiding Sensor but not on vendor type such as ITL, E2V or STA.
 ITL: [ 00, 01, 02, 03, 04, 05, 06, 07, 10, 11, 12, 13, 14, 15, 16, 17 ]
 E2V: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 01 ]
@@ -20,7 +20,7 @@ STA: [ 00, 01, 02, 03, 04, 05, 06, 07, 10, 11, 12, 13, 14, 15, 16, 17 ]
 WFS: [ 00, 01, 02, 03, 04, 05, 06, 07, 10, 11, 12, 13, 14, 15, 16, 17 ]
 
 # daq location patterns in the hardware. These values are pre-defined here so
-# that forwarder can throw exception when someone gives wrong "raft/ccd" 
+# that forwarder can throw exception when someone gives wrong "raft/ccd"
 # location. Currently daq hardware segfaults when wrong argument is given to
 # constructor
 ats: [ 00/0 ]
@@ -31,7 +31,7 @@ BASE_BROKER_ADDR: 141.142.238.15:5672/%2ftest_at
 
 # @deprecated_soon
 # forwarder queue to listen to RabbitMQ messages. This is static queue, meaning
-# someone has to create this queue in advance for forwarder to work. In the 
+# someone has to create this queue in advance for forwarder to work. In the
 # future, forwarder is gonna create queues on the fly when it starts up.
 CONSUME_QUEUE: f99_consume
 
@@ -51,3 +51,11 @@ SET_TIMEOUT: 3
 
 # timeout for forwarder to check keepalive of associated CSC
 CHECK_TIMEOUT: 10
+
+# file transfer protocol
+# bbcp is listed as an example. Another option is scp
+# -f, forces the copy
+# -n, does not use DNS to resolve IP address
+# -s, number of streams to use
+XFER_OPTION: bbcp -f -n -s 1 -i ~/.ssh/id_rsa
+#XFER_OPTION: scp -i ~/.ssh/id_rsa
