@@ -1,14 +1,6 @@
 cmake_minimum_required (VERSION 3.1)
 project (lsst_iip_tests)
 
-# c++11 support
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-
-#set(ENV{IIP_CONFIG_DIR} "./")
 # Build forwarder objects
 set(OBJ
     "RabbitConnectionTest.cpp"
@@ -35,7 +27,8 @@ target_include_directories(test_exe PRIVATE
     "${Daq_INCLUDE_DIRS}"
     "../include"
 )
-target_link_libraries(test_exe PUBLIC
+target_link_libraries(test_exe PRIVATE
+    lsst_iip_tests
     lsst_dm_forwarder
     lsst_iip_core
     ${daq_ims}

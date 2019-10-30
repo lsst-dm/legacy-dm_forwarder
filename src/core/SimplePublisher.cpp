@@ -36,8 +36,10 @@ catch (L1::RabbitConnectionError& e) {
 SimplePublisher::~SimplePublisher() { 
 }
 
-void SimplePublisher::publish_message(const std::string& queue, const std::string& body) {
-    AmqpClient::BasicMessage::ptr_t message = AmqpClient::BasicMessage::Create(body); 
+void SimplePublisher::publish_message(const std::string& queue, 
+                                      const std::string& body) {
+    AmqpClient::BasicMessage::ptr_t message = 
+        AmqpClient::BasicMessage::Create(body); 
     try { 
         _channel->BasicPublish("", queue, message); 
     }

@@ -62,6 +62,8 @@ class miniforwarder : public IIPBase {
         void publish_xfer_complete(const std::string& to,
                                    const std::string& session_id,
                                    const std::string& job_num);
+        void publish_processing_status(const int& error_code,
+                                       const std::string& desc);
         boost::filesystem::path create_dir(const boost::filesystem::path&);
         bool check_valid_board(const std::string& raft, const std::string& ccd);
         void register_fwd();
@@ -70,6 +72,7 @@ class miniforwarder : public IIPBase {
         std::string _name;
         std::string _consume_q;
         std::string _archive_q;
+        std::string _telemetry_q;
         std::string _amqp_url;
         std::string _partition;
         std::string _association_key;
