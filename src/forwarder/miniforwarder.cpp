@@ -43,9 +43,6 @@ miniforwarder::miniforwarder(const std::string& config,
     try { 
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
-        _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
-        _telemetry_q = _config_root["TELEMETRY_QUEUE"].as<std::string>();
-        _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
         redis_host = _config_root["REDIS_HOST"].as<std::string>();
         redis_port = _config_root["REDIS_PORT"].as<int>();
         redis_db = _config_root["REDIS_DB"].as<int>();
@@ -59,6 +56,7 @@ miniforwarder::miniforwarder(const std::string& config,
             .as<std::vector<std::string>>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
         _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
+        _telemetry_q = _config_root["TELEMETRY_QUEUE"].as<std::string>();
         _seconds_to_update = _config_root["SECONDS_TO_UPDATE"].as<int>();
         _seconds_to_expire = _config_root["SECONDS_TO_EXPIRE"].as<int>();
     }
