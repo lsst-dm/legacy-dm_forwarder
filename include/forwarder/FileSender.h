@@ -28,7 +28,12 @@
 
 class FileSender {
     public:
-        void send(const boost::filesystem::path&, const boost::filesystem::path&);
+        FileSender(const std::string& xfer_option);
+        void send(const boost::filesystem::path& from,
+                  const boost::filesystem::path& to);
+
+    private:
+        std::string _xfer_option;
 };
 
 #endif

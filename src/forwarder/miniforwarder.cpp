@@ -37,15 +37,11 @@ miniforwarder::miniforwarder(const std::string& config,
                              const std::string& log) : IIPBase(config, log)
                                  , _hdr()
                                  , _fmt()
-                                 , _readoutpattern(_config_root)
-                                 , _sender() { 
-    std::string work_dir, ip_host, redis_host;
+                                 , _readoutpattern(_config_root) {
+    std::string work_dir, ip_host, redis_host, xfer_option;
     int redis_port, redis_db;
     try { 
-        _name = _config_root["NAME"].as<std::string>();
         work_dir = _config_root["WORK_DIR"].as<std::string>();
-        _partition = _config_root["PARTITION"].as<std::string>();
-        _daq_locations = _config_root[_partition].as<std::vector<std::string>>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
         _telemetry_q = _config_root["TELEMETRY_QUEUE"].as<std::string>();
@@ -53,6 +49,13 @@ miniforwarder::miniforwarder(const std::string& config,
         redis_host = _config_root["REDIS_HOST"].as<std::string>();
         redis_port = _config_root["REDIS_PORT"].as<int>();
         redis_db = _config_root["REDIS_DB"].as<int>();
+        xfer_option = _config_root["XFER_OPTION"].as<std::string>();
+
+        _name = _config_root["NAME"].as<std::string>();
+        _partition = _config_root["PARTITION"].as<std::string>();
+        _daq_locations = _config_root[_partition].as<std::vector<std::string>>();
+        _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
+        _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
         _set_timeout = _config_root["SET_TIMEOUT"].as<int>();
         _check_timeout = _config_root["CHECK_TIMEOUT"].as<int>();
     }
@@ -111,6 +114,7 @@ miniforwarder::miniforwarder(const std::string& config,
     _db = std::unique_ptr<Scoreboard>(
             new Scoreboard(redis_host, redis_port, redis_db, redis_pwd));
     _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition.c_str()));
+    _sender = std::unique_ptr<FileSender>(new FileSender(xfer_option));
 
     _forwarder_list = "forwarder_list";
     _association_key = "f99_association";
@@ -333,7 +337,7 @@ void miniforwarder::assemble(const std::string& image_id) {
 
                 std::vector<std::string> pattern = _readoutpattern.pattern("WFS");
                 _fmt.write_header(pattern, pix, header);
-                _sender.send(pix, to);
+                _sender->send(pix, to);
                 publish_xfer_complete(to.string(), session_id, job_num);
                 
                 LOG_INF << "********* READOUT COMPLETE for " << image_id;
