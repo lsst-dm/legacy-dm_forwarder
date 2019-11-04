@@ -56,8 +56,8 @@ miniforwarder::miniforwarder(const std::string& config,
         _daq_locations = _config_root[_partition].as<std::vector<std::string>>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
         _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
-        _set_timeout = _config_root["SET_TIMEOUT"].as<int>();
-        _check_timeout = _config_root["CHECK_TIMEOUT"].as<int>();
+        _seconds_to_update = _config_root["SECONDS_TO_UPDATE"].as<int>();
+        _seconds_to_expire = _config_root["SECONDS_TO_EXPIRE"].as<int>();
     }
     catch (YAML::TypedBadConversion<std::string>& e) { 
         LOG_CRT << "YAML bad conversion for std::string";
@@ -120,7 +120,8 @@ miniforwarder::miniforwarder(const std::string& config,
     _association_key = "f99_association";
     
     auto bound_register_fwd = std::bind(&miniforwarder::register_fwd, this); 
-    _hb_params.timeout = _set_timeout;
+    _hb_params.seconds_to_expire = _seconds_to_expire;
+    _hb_params.seconds_to_update = _seconds_to_update;
     _hb_params.key = _association_key;
     _hb_params.redis_host = redis_host;
     _hb_params.redis_port = redis_port;
@@ -271,7 +272,6 @@ void miniforwarder::associated(const YAML::Node& n) {
         _pub->publish_message(reply_q, msg);
 
         heartbeat_params params = _hb_params;
-        params.timeout = _check_timeout;
         params.key = key;
         _watcher->start(params);
     }

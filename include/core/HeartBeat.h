@@ -35,7 +35,8 @@ struct heartbeat_params {
     int redis_db;
 
     std::string key;
-    int timeout;
+    int seconds_to_expire;
+    int seconds_to_update;
     std::function<void ()> action;
 };
 

@@ -46,17 +46,18 @@ void Beacon::ping(const heartbeat_params& params) {
     const int db = params.redis_db;
 
     const std::string key = params.key; 
-    const int timeout = params.timeout;
+    const int seconds_to_expire = params.seconds_to_expire;
+    const int seconds_to_update = params.seconds_to_update;
 
     try {
         RedisConnection redis(host, port, db);
         LOG_INF << "Beacon started ...";
         while (!_stop.load()) { 
-            redis.setex(key, timeout, "pong");
+            redis.setex(key, seconds_to_expire, "pong");
 
             std::unique_lock<std::mutex> lk(_mutex);
             std::cv_status status = _cond.wait_for(lk, 
-                    std::chrono::seconds(timeout));
+                    std::chrono::seconds(seconds_to_update));
         }
     }
     catch(L1::RedisError& e) { 

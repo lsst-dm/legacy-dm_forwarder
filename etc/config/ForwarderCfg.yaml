@@ -47,10 +47,10 @@ REDIS_PORT: 6379
 REDIS_DB: 15
 
 # timeout for forwarder to send keepalive to associated CSC
-SET_TIMEOUT: 3
+SECONDS_TO_UPDATE: 3
 
 # timeout for forwarder to check keepalive of associated CSC
-CHECK_TIMEOUT: 10
+SECONDS_TO_EXPIRE: 10
 
 # file transfer protocol
 # bbcp is listed as an example. Another option is scp
