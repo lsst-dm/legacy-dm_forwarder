@@ -342,6 +342,10 @@ void miniforwarder::assemble(const std::string& image_id) {
                 
                 LOG_INF << "********* READOUT COMPLETE for " << image_id;
 
+                const std::string msg = filename +
+                    " is successfuly transferred to " + to.string();
+                publish_processing_status(1, msg);
+
                 _db->remove(image_id);
                 std::remove(pix.c_str());
             }
