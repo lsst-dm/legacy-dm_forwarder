@@ -77,8 +77,8 @@ class miniforwarder : public IIPBase {
         std::string _partition;
         std::string _association_key;
         std::string _forwarder_list;
-        int _set_timeout; 
-        int _check_timeout;
+        int _seconds_to_update;
+        int _seconds_to_expire;
         heartbeat_params _hb_params;
 
         boost::filesystem::path _header_path;

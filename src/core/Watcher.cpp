@@ -49,7 +49,7 @@ void Watcher::check(const heartbeat_params params) {
     const int db = params.redis_db;
 
     const std::string key = params.key; 
-    const int timeout = params.timeout;
+    const int timeout = params.seconds_to_expire;
     auto execute = params.action;
 
     try { 
@@ -58,6 +58,8 @@ void Watcher::check(const heartbeat_params params) {
         while (!_stop.load()) { 
             bool exists = redis.exists(key);
             if (!exists) { 
+                LOG_CRT << "Did not receive heartbeat from Commandable SAL"
+                    << " Component(CSC)";
                 execute();
                 break;
             }
