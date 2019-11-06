@@ -36,10 +36,10 @@ namespace fs = boost::filesystem;
 miniforwarder::miniforwarder(const std::string& config, 
                              const std::string& log) : IIPBase(config, log)
                                  , _hdr()
-                                 , _fmt()
                                  , _readoutpattern(_config_root) {
     std::string work_dir, ip_host, redis_host, xfer_option;
     int redis_port, redis_db;
+    std::vector<std::string> segment_order;
     try { 
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
@@ -50,10 +50,13 @@ miniforwarder::miniforwarder(const std::string& config,
         redis_port = _config_root["REDIS_PORT"].as<int>();
         redis_db = _config_root["REDIS_DB"].as<int>();
         xfer_option = _config_root["XFER_OPTION"].as<std::string>();
+        segment_order = _config_root["SEGMENT_ORDER"]
+            .as<std::vector<std::string>>();
 
         _name = _config_root["NAME"].as<std::string>();
         _partition = _config_root["PARTITION"].as<std::string>();
-        _daq_locations = _config_root[_partition].as<std::vector<std::string>>();
+        _daq_locations = _config_root[_partition]
+            .as<std::vector<std::string>>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
         _archive_q = _config_root["ARCHIVE_QUEUE"].as<std::string>();
         _seconds_to_update = _config_root["SECONDS_TO_UPDATE"].as<int>();
@@ -113,8 +116,10 @@ miniforwarder::miniforwarder(const std::string& config,
 
     _db = std::unique_ptr<Scoreboard>(
             new Scoreboard(redis_host, redis_port, redis_db, redis_pwd));
-    _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition.c_str()));
+    _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition.c_str(),
+                segment_order));
     _sender = std::unique_ptr<FileSender>(new FileSender(xfer_option));
+    _fmt = std::unique_ptr<FitsFormatter>(new FitsFormatter(segment_order));
 
     _forwarder_list = "forwarder_list";
     _association_key = "f99_association";
@@ -221,6 +226,7 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         const xfer_info xfer = _db->get_xfer(image_id);
         const std::string raft = xfer.raft;
         const std::vector<std::string> ccds = xfer.ccds;
+        const std::string sensor = "WFS";
 
         for (auto& ccd : ccds) { 
             const std::string filename = image_id + "--R" + raft + 
@@ -232,7 +238,8 @@ void miniforwarder::end_readout(const YAML::Node& n) {
                 LOG_CRT << err;
                 throw L1::CannotFetchPixel(err);
             }
-            _daq->fetch(image_id, raft, ccd, "WaveFront", filepath);
+            std::vector<std::string> pattern = _readoutpattern.pattern(sensor);
+            _daq->fetch(image_id, raft, ccd, "WaveFront", filepath, pattern);
         }
 
         _db->add(image_id, "end_readout");
@@ -335,8 +342,7 @@ void miniforwarder::assemble(const std::string& image_id) {
                 const fs::path pix = _fits_path / fs::path(filename);
                 const fs::path to = fs::path(xfer.target) / fs::path(filename);
 
-                std::vector<std::string> pattern = _readoutpattern.pattern("WFS");
-                _fmt.write_header(pattern, pix, header);
+                _fmt->write_header(pix, header);
                 _sender->send(pix, to);
                 publish_xfer_complete(to.string(), session_id, job_num);
                 
