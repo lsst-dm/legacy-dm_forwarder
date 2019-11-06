@@ -31,30 +31,33 @@
 
 #include "Formatter.h"
 
-class DAQFetcher { 
+class DAQFetcher {
     public:
-        DAQFetcher(const char*);
+        DAQFetcher(const char* partition,
+                   const std::vector<std::string>& segment_order);
         ~DAQFetcher();
 
-        void fetch(const std::string&, 
-                   const std::string&, 
-                   const std::string&, 
-                   const std::string&, 
-                   const boost::filesystem::path&);
+        void fetch(const std::string&,
+                   const std::string&,
+                   const std::string&,
+                   const std::string&,
+                   const boost::filesystem::path&,
+                   const std::vector<std::string>& daq_order);
         template<typename T, typename U>
-        int32_t* fetch_ccd(const std::string&, 
-                           const std::string&, 
-                           const std::string&, 
-                           const boost::filesystem::path&, 
-                           std::function<U>);
-        
-        void decode_science(IMS::Science&, 
-                            int32_t**, 
-                            const char&, 
+        int32_t* fetch_ccd(const std::string&,
+                           const std::string&,
+                           const std::string&,
+                           const boost::filesystem::path&,
+                           std::function<U>,
+                           const std::vector<std::string>& daq_order);
+       
+        void decode_science(IMS::Science&,
+                            int32_t**,
+                            const char&,
                             const int32_t&);
-        void decode_wavefront(IMS::WaveFront&, 
-                              int32_t**, 
-                              const char&, 
+        void decode_wavefront(IMS::WaveFront&,
+                              int32_t**,
+                              const char&,
                               const int32_t&);
 
         void get_naxes(const IMS::Source&, long*);
@@ -65,7 +68,7 @@ class DAQFetcher {
         FitsFormatter _formatter;
 };
 
-class PixelArray { 
+class PixelArray {
     public:
         PixelArray(const int&, const int&);
         ~PixelArray();
@@ -75,8 +78,8 @@ class PixelArray {
         int _d1, _d2;
 };
 
-class StripeArray { 
-    public: 
+class StripeArray {
+    public:
         StripeArray(const int&);
         ~StripeArray();
         IMS::Stripe* get();

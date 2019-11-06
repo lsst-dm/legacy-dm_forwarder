@@ -27,33 +27,43 @@
 #include <fitsio.h>
 #include <boost/filesystem.hpp>
 
-class Formatter { 
+class Formatter {
     public:
-        void write_pix_file(int32_t**, int32_t&, long*, const boost::filesystem::path&);
+        Formatter(const std::vector<std::string>& segment_order);
+        void write_pix_file(int32_t**,
+                            int32_t&,
+                            long*,
+                            const boost::filesystem::path&,
+                            const std::vector<std::string>& daq_order);
+        int get_daq_segment_idx(const std::vector<std::string>& daq_order,
+                                const std::string segment);
+
+    protected:
+        std::vector<std::string> _segment_order;
 };
 
-class FitsFormatter : public Formatter { 
+class FitsFormatter : public Formatter {
     public:
-        void write_header(const std::vector<std::string>& pattern,
-                          const boost::filesystem::path& pix_path, 
+        FitsFormatter(const std::vector<std::string>& segment_order);
+        void write_header(const boost::filesystem::path& pix_path,
                           const boost::filesystem::path& header_path);
         bool contains_excluded_key(const char*);
-        int get_segment_num(const std::vector<std::string>& pattern, 
-                            fitsfile* header); 
+        int get_segment_num(fitsfile* header);
 };
 
-class FitsOpener { 
+class FitsOpener {
     public:
         FitsOpener(const boost::filesystem::path&, int);
         ~FitsOpener();
         fitsfile* get();
         int num_hdus();
+
     private:
         fitsfile* _fptr;
-        int _status; 
+        int _status;
 };
 
-enum FILE_MODE { 
+enum FILE_MODE {
     WRITE_ONLY = -1
 };
 

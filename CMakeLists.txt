@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(dm_forwarder VERSION 2.1.0)
+project(dm_forwarder VERSION 1.0.0)
 enable_testing()
 
 option(RPMS "Build rpms" OFF)

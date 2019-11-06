@@ -94,10 +94,10 @@ class miniforwarder : public IIPBase {
         std::unique_ptr<Watcher> _watcher;
         std::unique_ptr<Beacon> _beacon;
         std::unique_ptr<FileSender> _sender;
+        std::unique_ptr<FitsFormatter> _fmt;
 
         MessageBuilder _builder;
         HeaderFetcher _hdr;
-        FitsFormatter _fmt;
         ReadoutPattern _readoutpattern;
 };
 

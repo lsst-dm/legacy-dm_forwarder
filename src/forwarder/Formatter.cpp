@@ -25,15 +25,18 @@
 #include "core/Exceptions.h"
 #include "forwarder/Formatter.h"
 
-#define NUM_AMP 16
-
 namespace fs = boost::filesystem;
 
-void Formatter::write_pix_file(int32_t** ccd, 
-                               int32_t& len, 
-                               long* naxes, 
-                               const fs::path& filepath) { 
-    try { 
+Formatter::Formatter(const std::vector<std::string>& segment_order) {
+    _segment_order = segment_order;
+}
+
+void Formatter::write_pix_file(int32_t** ccd,
+                               int32_t& len,
+                               long* naxes,
+                               const fs::path& filepath,
+                               const std::vector<std::string>& daq_order) {
+    try {
         int status = 0;
         int bitpix = LONG_IMG;
         int num_axes = 2;
@@ -43,20 +46,40 @@ void Formatter::write_pix_file(int32_t** ccd,
         fitsfile* optr = file.get();
 
         fits_create_img(optr, bitpix, 0, NULL, &status);
-        for (int i = 0; i < NUM_AMP; i++) {  
+        if (_segment_order.size() != daq_order.size()) {
+            const std::string err = "Different size between DAQ and segment.";
+            LOG_CRT << err;
+            throw L1::CannotFormatFitsfile(err);
+        }
+        for (int i = 0; i < _segment_order.size(); i++) {
+            int idx = get_daq_segment_idx(daq_order, _segment_order[i]);
             fits_create_img(optr, bitpix, num_axes, naxes, &status);
-            fits_write_img(optr, TINT, first_elem, len, ccd[i], &status);
+            fits_write_img(optr, TINT, first_elem, len, ccd[idx], &status);
         }
 
-        if (status) { 
+        if (status) {
             char err[FLEN_ERRMSG];
             fits_read_errmsg(err);
             LOG_CRT << std::string(err);
             throw L1::CannotFormatFitsfile(err);
         }
         LOG_INF << "Finished writing pixel fits file at " << filepath.string();
-    } 
-    catch (L1::CfitsioError& e) { 
+    }
+    catch (L1::CfitsioError& e) {
         throw L1::CannotFormatFitsfile(e.what());
     }
+}
+
+int Formatter::get_daq_segment_idx(const std::vector<std::string>& daq_order,
+                                   const std::string segment) {
+    auto iter = std::find(daq_order.begin(), daq_order.end(), segment);
+    if (iter == daq_order.end()) {
+        std::string err = "Cannot find segment number " + segment
+             + " inside DAQ Readout Pattern.";
+        LOG_CRT << err;
+        throw L1::CannotFormatFitsfile(err);
+    }
+
+    int idx = std::distance(daq_order.begin(), iter);
+    return idx;
 }
