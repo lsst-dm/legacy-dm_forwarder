@@ -33,7 +33,8 @@ class MessageBuilder {
                                         const std::string& session_id,
                                         const std::string& job_num,
                                         const std::string& reply_q);
-        std::string build_associated_ack(const std::string& key);
+        std::string build_associated_ack(const std::string& key,
+                                         const std::string& ack_id);
         std::string build_fwd_info(const std::string& hostname,
                                    const std::string& ip_addr,
                                    const std::string& consume_q);

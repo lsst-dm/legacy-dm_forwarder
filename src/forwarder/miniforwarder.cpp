@@ -272,7 +272,9 @@ void miniforwarder::associated(const YAML::Node& n) {
     try { 
         const std::string key = n["ASSOCIATION_KEY"].as<std::string>();
         const std::string reply_q = n["REPLY_QUEUE"].as<std::string>();
-        const std::string msg = _builder.build_associated_ack(_association_key);
+        const std::string ack_id = n["ACK_ID"].as<std::string>();
+        const std::string msg = _builder.build_associated_ack(_association_key,
+                ack_id);
 
         _pub->publish_message(reply_q, msg);
 
