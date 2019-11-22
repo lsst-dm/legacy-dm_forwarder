@@ -56,13 +56,15 @@ std::string MessageBuilder::build_xfer_complete(const std::string& filename,
     return std::string(msg.c_str());
 }
 
-std::string MessageBuilder::build_associated_ack(const std::string& key) {
+std::string MessageBuilder::build_associated_ack(const std::string& key,
+                                                 const std::string& ack_id) {
     YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
     msg << YAML::BeginMap;
     msg << YAML::Key << "MSG_TYPE" << YAML::Value << "ASSOCIATED_ACK";
     msg << YAML::Key << "ASSOCIATION_KEY" << YAML::Value << key;
+    msg << YAML::Key << "ACK_ID" << YAML::Value << ack_id;
     msg << YAML::EndMap;
     return std::string(msg.c_str());
 }
