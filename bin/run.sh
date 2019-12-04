@@ -10,4 +10,4 @@ docker run \
     --mount type=bind,src=$HOME/.lsst,target=/home/iip/.lsst,readonly \
     --mount type=bind,src=/opt/lsst/dm_forwarder/config,target=/opt/lsst/dm_forwarder/config,readonly \
     --mount type=bind,src=/home/lsst-daq/images,target=/home/lsst-daq/images \
-    lsst-dm/dm_forwarder:v1.0.0-rc6
+    lsst-dm/dm_forwarder:v1.0.0-rc7

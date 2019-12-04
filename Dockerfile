@@ -1,6 +1,7 @@
 FROM centos:7 as builder
 
 ARG cmakeURL
+ARG rabbitmqcURL
 ARG SimpleAmqpClientURL
 ARG yamlcppURL
 ARG cfitsioURL
@@ -13,7 +14,6 @@ RUN yum install -y \
         make-3.82 \
         gcc-c++-4.8.5 \
         boost169-devel-1.69.0 \
-        librabbitmq-devel-0.8.0 \
         libcurl-devel-7.29.0 \
         hiredis-devel-0.12.1 \
         zlib-devel-1.2.7 \
@@ -29,6 +29,15 @@ RUN git clone ${bbcpURL} bbcp && \
     cd bbcp/src && \
     make && \
     cp /bbcp/bin/amd64_linux31/bbcp /usr/bin
+
+# rabbitmq-c
+RUN mkdir rabbitmqc && cd rabbitmqc && \
+    curl -L -o rabbitmqc.tar.gz ${rabbitmqcURL}  && \
+    tar zxvf rabbitmqc.tar.gz && \
+    cd * && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
+    cmake --build . --target install
 
 # SimpleAmqpClient
 RUN mkdir SimpleAmqpClient && cd SimpleAmqpClient && \
@@ -82,8 +91,9 @@ FROM centos:7
 WORKDIR /app
 
 ENV IIP_CONFIG_DIR=/opt/lsst/dm_forwarder/config
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/lsst/daq/x86/lib:/usr/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/lsst/daq/x86/lib:/usr/lib:/usr/lib64
 
+COPY --from=builder /usr/lib64/librabbitmq.so /usr/lib/
 COPY --from=builder /usr/lib/libyaml-cpp.so /usr/lib/
 COPY --from=builder /usr/lib/libSimpleAmqpClient.so /usr/lib/
 COPY --from=builder /usr/lib/libcfitsio.so /usr/lib/
@@ -95,7 +105,6 @@ RUN yum install -y epel-release
 RUN yum install -y \
         boost169-1.69.0 \
         libcurl-7.29.0 \
-        librabbitmq-0.8.0 \
         hiredis-0.12.1 \
         openssh-clients-7.4p1 \
         openssl-1.0.2k \
