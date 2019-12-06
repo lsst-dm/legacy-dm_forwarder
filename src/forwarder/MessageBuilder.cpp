@@ -84,6 +84,7 @@ std::string MessageBuilder::build_fwd_info(const std::string& hostname,
 }
 
 std::string MessageBuilder::build_processing_status(const int& code,
+                                                    const std::string& obsid,
                                                     const std::string& desc) {
     YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
@@ -91,6 +92,7 @@ std::string MessageBuilder::build_processing_status(const int& code,
     msg << YAML::BeginMap;
     msg << YAML::Key << "MSG_TYPE" << YAML::Value << "TELEMETRY";
     msg << YAML::Key << "STATUS_CODE" << YAML::Value << code;
+    msg << YAML::Key << "OBSID" << YAML::Value << obsid;
     msg << YAML::Key << "DESCRIPTION" << YAML::Value << desc;
     msg << YAML::EndMap;
     return std::string(msg.c_str());

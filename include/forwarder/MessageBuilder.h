@@ -39,5 +39,6 @@ class MessageBuilder {
                                    const std::string& ip_addr,
                                    const std::string& consume_q);
         std::string build_processing_status(const int& code,
+                                            const std::string& obsid,
                                             const std::string& desc);
 };

@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(check_valid_board) {
 }
 
 BOOST_AUTO_TEST_CASE(publish_processing_status) {
-    BOOST_CHECK_NO_THROW(_fwd->publish_processing_status(100, "hello world"));
+    BOOST_CHECK_NO_THROW(_fwd->publish_processing_status(1, "AT_0_20191205_00001", "hello world"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
