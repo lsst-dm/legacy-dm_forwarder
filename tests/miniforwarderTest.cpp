@@ -173,8 +173,19 @@ BOOST_AUTO_TEST_CASE(check_valid_board) {
     BOOST_CHECK_EQUAL(_fwd->check_valid_board("1111", "00"), false);
 }
 
-BOOST_AUTO_TEST_CASE(publish_processing_status) {
-    BOOST_CHECK_NO_THROW(_fwd->publish_processing_status(1, "AT_0_20191205_00001", "hello world"));
+BOOST_AUTO_TEST_CASE(publish_image_retrieval_for_archiving) {
+    BOOST_CHECK_NO_THROW(_fwd->publish_image_retrieval_for_archiving(
+                0,
+                "AT_0_20191205_00001",
+                "/data/AT_0_20191205_000001.fits",
+                "hello world")
+    );
+    BOOST_CHECK_NO_THROW(_fwd->publish_image_retrieval_for_archiving(
+                5610,
+                "AT_0_20191205_00001",
+                "",
+                "hello world")
+    );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

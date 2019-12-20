@@ -40,6 +40,7 @@ std::string MessageBuilder::build_ack(const std::string& msg_type,
 }
 
 std::string MessageBuilder::build_xfer_complete(const std::string& filename,
+                                                const std::string& obsid,
                                                 const std::string& session_id,
                                                 const std::string& job_num,
                                                 const std::string& reply_q) {
@@ -49,6 +50,7 @@ std::string MessageBuilder::build_xfer_complete(const std::string& filename,
     msg << YAML::BeginMap;
     msg << YAML::Key << "MSG_TYPE" << YAML::Value << "FILE_TRANSFER_COMPLETED";
     msg << YAML::Key << "FILENAME" << YAML::Value << filename;
+    msg << YAML::Key << "OBSID" << YAML::Value << obsid;
     msg << YAML::Key << "SESSION_ID" << YAML::Value << session_id;
     msg << YAML::Key << "JOB_NUM" << YAML::Value << job_num;
     msg << YAML::Key << "REPLY_QUEUE" << YAML::Value << reply_q;
@@ -83,16 +85,20 @@ std::string MessageBuilder::build_fwd_info(const std::string& hostname,
     return std::string(msg.c_str());
 }
 
-std::string MessageBuilder::build_processing_status(const int& code,
-                                                    const std::string& obsid,
-                                                    const std::string& desc) {
+std::string MessageBuilder::build_image_retrieval_for_archiving(
+        const int& code,
+        const std::string& obsid,
+        const std::string& filename,
+        const std::string& desc) {
     YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
     msg << YAML::BeginMap;
-    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "TELEMETRY";
-    msg << YAML::Key << "STATUS_CODE" << YAML::Value << code;
+    msg << YAML::Key << "MSG_TYPE"
+        << YAML::Value << "IMAGE_RETRIEVAL_FOR_ARCHIVING";
     msg << YAML::Key << "OBSID" << YAML::Value << obsid;
+    msg << YAML::Key << "FILENAME" << YAML::Value << filename;
+    msg << YAML::Key << "STATUS_CODE" << YAML::Value << code;
     msg << YAML::Key << "DESCRIPTION" << YAML::Value << desc;
     msg << YAML::EndMap;
     return std::string(msg.c_str());

@@ -30,6 +30,7 @@ class MessageBuilder {
                               const std::string& ack_id,
                               const std::string& ack_bool);
         std::string build_xfer_complete(const std::string& filename,
+                                        const std::string& obsid,
                                         const std::string& session_id,
                                         const std::string& job_num,
                                         const std::string& reply_q);
@@ -38,7 +39,9 @@ class MessageBuilder {
         std::string build_fwd_info(const std::string& hostname,
                                    const std::string& ip_addr,
                                    const std::string& consume_q);
-        std::string build_processing_status(const int& code,
-                                            const std::string& obsid,
-                                            const std::string& desc);
+        std::string build_image_retrieval_for_archiving(
+                const int& code,
+                const std::string& obsid,
+                const std::string& filename,
+                const std::string& desc);
 };
