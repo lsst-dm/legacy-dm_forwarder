@@ -59,12 +59,16 @@ class miniforwarder : public IIPBase {
 
         void assemble(const std::string&);
         void publish_ack(const YAML::Node&);
-        void publish_xfer_complete(const std::string& to,
-                                   const std::string& session_id,
-                                   const std::string& job_num);
-        void publish_processing_status(const int& error_code,
-                                       const std::string& obsid,
-                                       const std::string& desc);
+        void publish_xfer_complete(
+                const std::string& obsid,
+                const std::string& to,
+                const std::string& session_id,
+                const std::string& job_num);
+        void publish_image_retrieval_for_archiving(
+                const int& error_code,
+                const std::string& obsid,
+                const std::string& filename,
+                const std::string& desc);
         boost::filesystem::path create_dir(const boost::filesystem::path&);
         bool check_valid_board(const std::string& raft, const std::string& ccd);
         void register_fwd();

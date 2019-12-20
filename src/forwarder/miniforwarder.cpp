@@ -121,7 +121,7 @@ miniforwarder::miniforwarder(const std::string& config,
 
     _forwarder_list = "forwarder_list";
     _association_key = "f99_association";
-   
+
     auto bound_register_fwd = std::bind(&miniforwarder::register_fwd, this);
     _hb_params.seconds_to_expire = _seconds_to_expire;
     _hb_params.seconds_to_update = _seconds_to_update;
@@ -214,12 +214,14 @@ void miniforwarder::header_ready(const YAML::Node& n) {
     }
     catch (L1::CannotFetchHeader& e) {
         int error_code = 5610;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (std::exception& e) {
         LOG_CRT << e.what();
         int error_code = 5610;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
 }
 
@@ -260,16 +262,19 @@ void miniforwarder::end_readout(const YAML::Node& n) {
     }
     catch (L1::KeyNotFound& e) {
         int error_code = 5611;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (L1::CannotFetchPixel& e) {
         int error_code = 5611;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (std::exception& e) {
         LOG_CRT << e.what();
         int error_code = 5611;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
 }
 
@@ -317,12 +322,13 @@ void miniforwarder::publish_ack(const YAML::Node& n) {
     }
 }
 
-void miniforwarder::publish_xfer_complete(const std::string& to,
+void miniforwarder::publish_xfer_complete(const std::string& obsid,
+                                          const std::string& to,
                                           const std::string& session_id,
                                           const std::string& job_num) {
     try {
         const std::string filename = to.substr(to.find(":") + 1);
-        const std::string msg = _builder.build_xfer_complete(filename,
+        const std::string msg = _builder.build_xfer_complete(filename, obsid,
                 session_id, job_num, _consume_q);
         _pub->publish_message(_archive_q, msg);
     }
@@ -332,10 +338,16 @@ void miniforwarder::publish_xfer_complete(const std::string& to,
     }
 }
 
-void miniforwarder::publish_processing_status(const int& error_code,
-                                              const std::string& obsid,
-                                              const std::string& desc) {
-    const std::string msg = _builder.build_processing_status(error_code, obsid, desc);
+void miniforwarder::publish_image_retrieval_for_archiving(
+        const int& error_code,
+        const std::string& obsid,
+        const std::string& filename,
+        const std::string& desc) {
+    const std::string msg = _builder.build_image_retrieval_for_archiving(
+            error_code,
+            obsid,
+            filename,
+            desc);
     try {
         _pub->publish_message(_telemetry_q, msg);
     }
@@ -360,13 +372,17 @@ void miniforwarder::assemble(const std::string& image_id) {
 
                 _fmt->write_header(pix, header);
                 _sender->send(pix, to);
-                publish_xfer_complete(to.string(), session_id, job_num);
-               
+                publish_xfer_complete(image_id, to.string(), session_id, job_num);
+
                 LOG_INF << "********* READOUT COMPLETE for " << image_id;
 
                 const std::string msg = filename +
                     " is successfuly transferred to " + to.string();
-                publish_processing_status(1, image_id, msg);
+
+                const std::string file_path = to.string().substr(
+                        to.string().find(":") + 1);
+                publish_image_retrieval_for_archiving(0, image_id,
+                        file_path, msg);
 
                 _db->remove(image_id);
                 std::remove(pix.c_str());
@@ -377,26 +393,31 @@ void miniforwarder::assemble(const std::string& image_id) {
     }
     catch (L1::KeyNotFound& e) {
         int error_code = 5612;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (L1::InvalidReadoutPattern& e) {
         int error_code = 5612;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (L1::CannotFormatFitsfile& e) {
         int error_code = 5612;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (L1::CannotCopyFile& e) {
         int error_code = 5612;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
     catch (std::exception& e) {
         std::string err = "Cannot assemble fitsfile because " +
             std::string(e.what());
         LOG_CRT << err;
         int error_code = 5612;
-        publish_processing_status(error_code, image_id, e.what());
+        publish_image_retrieval_for_archiving(error_code, image_id, "",
+                e.what());
     }
 }
 

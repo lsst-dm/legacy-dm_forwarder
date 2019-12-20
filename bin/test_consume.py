@@ -10,5 +10,6 @@ ch = con.channel()
 def on(ch, method, properties, body):
     print(body)
 
-ch.basic_consume(on, 'telemetry_queue')
+#ch.basic_consume(on, 'telemetry_queue')
+ch.basic_consume(on, 'archive_ctrl_consume')
 ch.start_consuming()
