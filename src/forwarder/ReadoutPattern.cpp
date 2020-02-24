@@ -29,17 +29,17 @@
 
 const std::string SENSORS = "SENSORS";
 
-ReadoutPattern::ReadoutPattern(const YAML::Node& n) { 
+ReadoutPattern::ReadoutPattern(const YAML::Node& n) {
     _root = n;
 }
 
-std::vector<std::string> ReadoutPattern::pattern(const std::string& sensor) { 
-    try { 
+std::vector<std::string> ReadoutPattern::pattern(const std::string& sensor) {
+    try {
         std::vector<std::string> boards = _root[sensor].as<std::vector<std::string>>();
         return boards;
     }
-    catch (YAML::TypedBadConversion<std::vector<std::string>>& e) { 
-        std::string err = "YAML Key \"" + sensor + 
+    catch (YAML::TypedBadConversion<std::vector<std::string>>& e) {
+        std::string err = "YAML Key \"" + sensor +
             "\" does not exist in configuration file";
         LOG_CRT << err;
         throw L1::InvalidReadoutPattern(err);

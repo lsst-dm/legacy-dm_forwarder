@@ -25,36 +25,38 @@
 #include "core/SimpleLogger.h"
 #include "core/IIPBase.h"
 
-IIPBase::IIPBase(const std::string& configfilename, const std::string& logfilename) {
+IIPBase::IIPBase(const std::string& configfilename,
+                 const std::string& logfilename) {
     std::string cfg;
-    try { 
+    try {
         cfg = load_config_file(configfilename);
-        _config_root = YAML::LoadFile(cfg); 
+        _config_root = YAML::LoadFile(cfg);
         init_log(get_log_filepath(), logfilename);
 
-        _credentials = std::unique_ptr<Credentials>(new Credentials("iip_cred.yaml"));
+        _credentials = std::unique_ptr<Credentials>(
+                new Credentials("iip_cred.yaml"));
     }
-    catch (YAML::BadFile& e) { 
+    catch (YAML::BadFile& e) {
         std::cout << "Cannot read configuration file " << cfg << std::endl;
-        exit(-1); 
-    }  
+        exit(-1);
+    }
 }
 
-IIPBase::~IIPBase() { 
+IIPBase::~IIPBase() {
 }
 
-std::string IIPBase::get_log_filepath() { 
+std::string IIPBase::get_log_filepath() {
     char* iip_log_dir = getenv("IIP_LOG_DIR");
     YAML::Node log_node = _config_root["LOGGING_DIR"];
 
     std::string path;
-    if (iip_log_dir) { 
-        path = iip_log_dir;    
+    if (iip_log_dir) {
+        path = iip_log_dir;
     }
-    else if (log_node) { 
+    else if (log_node) {
         path = log_node.as<std::string>();
     }
-    else { 
+    else {
         path = "/tmp";
     }
 
@@ -62,36 +64,37 @@ std::string IIPBase::get_log_filepath() {
     return path;
 }
 
-std::string IIPBase::load_config_file(const std::string& config_filename) { 
+std::string IIPBase::load_config_file(const std::string& config_filename) {
     char* iip_config_dir = getenv("IIP_CONFIG_DIR");
     char* ctrl_iip_dir = getenv("CTRL_IIP_DIR");
 
-    if (!iip_config_dir && !ctrl_iip_dir) { 
-        std::cout << "Please set environment variable CTRL_IIP_DIR or IIP_CONFIG_DIR" << std::endl;
+    if (!iip_config_dir && !ctrl_iip_dir) {
+        std::cout << "Please set environment variable CTRL_IIP_DIR or "
+            << "IIP_CONFIG_DIR" << std::endl;
         exit(-1);
     }
 
     std::string config_file;
-    if (iip_config_dir) { 
-        std::string config_dir(iip_config_dir); 
+    if (iip_config_dir) {
+        std::string config_dir(iip_config_dir);
         config_file = config_dir + "/" + config_filename;
     }
-    else if (ctrl_iip_dir) { 
-        std::string config_dir(ctrl_iip_dir); 
+    else if (ctrl_iip_dir) {
+        std::string config_dir(ctrl_iip_dir);
         config_file = config_dir + "/etc/config/" + config_filename;
     }
     else {
         std::cout << "Cannot find configuration file " << config_filename << std::endl;
-	exit(-1); 
+	exit(-1);
     }
     std::cout << "Loaded configuration from " << config_file << std::endl;
-    return config_file; 
+    return config_file;
 }
 
-std::string IIPBase::get_amqp_url(const std::string& username, 
-                                  const std::string& passwd, 
-                                  const std::string& broker_url) { 
-    std::ostringstream base_broker_url; 
+std::string IIPBase::get_amqp_url(const std::string& username,
+                                  const std::string& passwd,
+                                  const std::string& broker_url) {
+    std::ostringstream base_broker_url;
     base_broker_url << "amqp://" \
         << username << ":" \
         << passwd << "@" \

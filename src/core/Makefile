@@ -1,5 +1,5 @@
 INCLUDE		= -I/opt/lsst/include -I../../include
-LDPATH		= -L/opt/lsst/lib 
+LDPATH		= -L/opt/lsst/lib
 LOG_LIB         = -lboost_log -lboost_filesystem -lboost_system -lboost_thread
 LIBS		= -lyaml-cpp -lpthread
 OBJ		= $(addprefix ../obj/, \

@@ -4,3 +4,7 @@ SESSION_ID: session_100
 RAFT_LIST: 00
 RAFT_CCD_LIST: [ "00" ]
 TARGET_LOCATION: "ARC@141.142.238.15:/data/export"
+
+image: gen1
+sensor: Science
+location: 22/0

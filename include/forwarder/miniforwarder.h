@@ -36,14 +36,14 @@
 #include "forwarder/Scoreboard.h"
 #include "forwarder/MessageBuilder.h"
 #include "forwarder/HeaderFetcher.h"
-#include "forwarder/DAQFetcher.h"
 #include "forwarder/Formatter.h"
 #include "forwarder/FileSender.h"
 #include "forwarder/ReadoutPattern.h"
+#include "daq/DAQFetcher.h"
 
 class miniforwarder : public IIPBase {
     public:
-        miniforwarder(const std::string& config, 
+        miniforwarder(const std::string& config,
                       const std::string& log);
         ~miniforwarder();
 
@@ -89,7 +89,7 @@ class miniforwarder : public IIPBase {
         boost::filesystem::path _header_path;
         boost::filesystem::path _fits_path;
 
-        std::map<const std::string, 
+        std::map<const std::string,
             std::function<void (const YAML::Node&)> > _actions;
         std::vector<std::string> _daq_locations;
 

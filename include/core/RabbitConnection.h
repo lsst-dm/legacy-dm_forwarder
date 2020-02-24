@@ -24,13 +24,12 @@
 #ifndef RABBIT_CONNECTION_H
 #define RABBIT_CONNECTION_H
 
-#include <iostream>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
 
 /**
  * Create connection to RabbitMQ Server
  */
-class RabbitConnection { 
+class RabbitConnection {
     public:
         /**
          * Create connection to RabbitMQ Server
@@ -50,7 +49,7 @@ class RabbitConnection {
 
     protected:
         // Amqp Channl object used for connecting to RabbitMQ Server
-        AmqpClient::Channel::ptr_t _channel;  
+        AmqpClient::Channel::ptr_t _channel;
 };
 
 #endif

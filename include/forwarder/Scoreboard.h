@@ -24,7 +24,6 @@
 #ifndef SCOREBOARD_H
 #define SCOREBOARD_H
 
-#include <iostream>
 #include <map>
 #include <set>
 #include <memory>
@@ -39,7 +38,7 @@
  * @param raft Raft number of the form "00"
  * @param ccds Name of ccds inside the raft to pull
  */
-struct xfer_info { 
+struct xfer_info {
     std::string target;
     std::string session_id;
     std::string job_num;
@@ -102,7 +101,7 @@ class Scoreboard {
          * @param image_id Image ID
          * @param xfer Transfer information
          */
-        void add_xfer(const std::string&, const xfer_info&); 
+        void add_xfer(const std::string&, const xfer_info&);
 
         /**
          * Get transfer information
@@ -112,9 +111,9 @@ class Scoreboard {
          *
          * @throws L1::KeyNotFound if Image ID does not exist in storage
          */
-        xfer_info get_xfer(const std::string&); 
+        xfer_info get_xfer(const std::string&);
 
-        void set_fwd(const std::string& key, const std::string& body); 
+        void set_fwd(const std::string& key, const std::string& body);
 
     private:
         // RedisConnection

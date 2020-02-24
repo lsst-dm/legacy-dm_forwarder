@@ -21,7 +21,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <sstream>
 #include "core/SimpleLogger.h"
 #include "core/Exceptions.h"
@@ -43,11 +42,12 @@ void FileSender::send(const fs::path& from, const fs::path& to) {
 
     int status = system(bbcp.str().c_str());
     if (status) {
-        const std::string err = "Cannot copy file from " + from.string() +
-            " to " + to.string();
-        LOG_CRT << err;
-        throw L1::CannotCopyFile(err);
+        std::ostringstream err;
+        err << "Cannot copy file from " << from.string()
+            << "to" << to.string();
+        LOG_CRT << err.str();
+        throw L1::CannotCopyFile(err.str());
     }
 
-    LOG_INF << "Sent file from " + from.string() + " to " + to.string();
+    LOG_INF << "Sent file from " << from.string() << " to " << to.string();
 }

@@ -26,24 +26,24 @@
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
 
-SimplePublisher::SimplePublisher(const std::string& url) 
-    try : RabbitConnection(url) { 
+SimplePublisher::SimplePublisher(const std::string& url)
+    try : RabbitConnection(url) {
 }
-catch (L1::RabbitConnectionError& e) { 
+catch (L1::RabbitConnectionError& e) {
     throw L1::PublisherError(e.what());
 }
 
-SimplePublisher::~SimplePublisher() { 
+SimplePublisher::~SimplePublisher() {
 }
 
-void SimplePublisher::publish_message(const std::string& queue, 
+void SimplePublisher::publish_message(const std::string& queue,
                                       const std::string& body) {
-    AmqpClient::BasicMessage::ptr_t message = 
-        AmqpClient::BasicMessage::Create(body); 
-    try { 
-        _channel->BasicPublish("", queue, message); 
+    AmqpClient::BasicMessage::ptr_t message =
+        AmqpClient::BasicMessage::Create(body);
+    try {
+        _channel->BasicPublish("", queue, message);
     }
-    catch (std::exception& e) { 
+    catch (std::exception& e) {
         std::string err = "Cannot publish " + body + " because " + e.what();
         LOG_CRT << err;
         throw L1::PublisherError(err);

@@ -25,7 +25,6 @@
 #define SIMPLE_LOGGER_H
 
 #include <string>
-#include <iostream>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/log/support/date_time.hpp>
@@ -34,7 +33,7 @@
 #include <boost/log/attributes.hpp>
 #include <boost/log/sinks.hpp>
 #include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp> 
+#include <boost/log/utility/setup/common_attributes.hpp>
 
 namespace logging = boost::log;
 namespace attrs = boost::log::attributes;
@@ -43,17 +42,17 @@ namespace sinks = boost::log::sinks;
 namespace expr = boost::log::expressions;
 namespace keywords = boost::log::keywords;
 
-typedef sinks::asynchronous_sink< sinks::text_file_backend > file_sink; 
+typedef sinks::asynchronous_sink< sinks::text_file_backend > file_sink;
 
-enum severity_level { 
-    debug, 
-    info, 
+enum severity_level {
+    debug,
+    info,
     critical,
     warning
-}; 
+};
 
 static src::severity_logger< severity_level > lg;
-BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", severity_level); 
+BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", severity_level);
 
 /**
  * Overloaded operator << for log statements
@@ -83,10 +82,10 @@ void init_log(const std::string& filepath, const std::string& filename);
     << std::setw(5) << std::setfill(' ') << __LINE__\
     << "    "
 
-#define LOG_DBG LOGGER(lg, debug)  
-#define LOG_INF LOGGER(lg, info)  
-#define LOG_CRT LOGGER(lg, critical)  
-#define LOG_WRN LOGGER(lg, warning)  
+#define LOG_DBG LOGGER(lg, debug)
+#define LOG_INF LOGGER(lg, info)
+#define LOG_CRT LOGGER(lg, critical)
+#define LOG_WRN LOGGER(lg, warning)
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(lg, src::severity_logger_mt< severity_level >);
 

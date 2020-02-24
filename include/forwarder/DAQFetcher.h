@@ -21,6 +21,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef DAQFETCHER_H
+#define DAQFETCHER_H
+
 #include <functional>
 #include <boost/filesystem.hpp>
 
@@ -50,7 +53,7 @@ class DAQFetcher {
                            const boost::filesystem::path&,
                            std::function<U>,
                            const std::vector<std::string>& daq_order);
-       
+
         void decode_science(IMS::Science&,
                             int32_t**,
                             const char&,
@@ -68,21 +71,4 @@ class DAQFetcher {
         FitsFormatter _formatter;
 };
 
-class PixelArray {
-    public:
-        PixelArray(const int&, const int&);
-        ~PixelArray();
-        int32_t** get();
-    private:
-        int32_t** _arr;
-        int _d1, _d2;
-};
-
-class StripeArray {
-    public:
-        StripeArray(const int&);
-        ~StripeArray();
-        IMS::Stripe* get();
-    private:
-        IMS::Stripe* _arr;
-};
+#endif

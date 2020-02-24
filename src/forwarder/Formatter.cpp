@@ -21,21 +21,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
+#include <unordered_set>
+#include <algorithm>
+#include <future>
 #include "core/SimpleLogger.h"
 #include "core/Exceptions.h"
 #include "forwarder/Formatter.h"
+#include "forwarder/PixelArray.h"
+
 
 namespace fs = boost::filesystem;
 
-Formatter::Formatter(const std::vector<std::string>& segment_order) {
-    _segment_order = segment_order;
+Formatter::Formatter(const std::vector<std::string>& daq_mapping,
+                     const std::vector<std::string>& hdr_mapping) :
+        _daq_mapping{daq_mapping},
+        _hdr_mapping{hdr_mapping} {
+
+    if (hdr_mapping.size() != daq_mapping.size()) {
+        std::ostringstream err;
+        err << "DAQ(" << daq_mapping.size() << ") and Header("
+            << hdr_mapping.size() << ") have different segment sizes.";
+        LOG_CRT << err.str();
+        throw L1::CannotFormatFitsfile(err.str());
+    }
 }
 
 void Formatter::write_pix_file(int32_t** ccd,
                                int32_t& len,
                                long* naxes,
-                               const fs::path& filepath,
-                               const std::vector<std::string>& daq_order) {
+                               const fs::path& filepath) {
     try {
         int status = 0;
         int bitpix = LONG_IMG;
@@ -46,13 +61,8 @@ void Formatter::write_pix_file(int32_t** ccd,
         fitsfile* optr = file.get();
 
         fits_create_img(optr, bitpix, 0, NULL, &status);
-        if (_segment_order.size() != daq_order.size()) {
-            const std::string err = "Different size between DAQ and segment.";
-            LOG_CRT << err;
-            throw L1::CannotFormatFitsfile(err);
-        }
-        for (int i = 0; i < _segment_order.size(); i++) {
-            int idx = get_daq_segment_idx(daq_order, _segment_order[i]);
+        for (int i = 0; i < _hdr_mapping.size(); i++) {
+            int idx = get_daq_segment_idx(_hdr_mapping[i]);
             fits_create_img(optr, bitpix, num_axes, naxes, &status);
             fits_write_img(optr, TINT, first_elem, len, ccd[idx], &status);
         }
@@ -70,16 +80,46 @@ void Formatter::write_pix_file(int32_t** ccd,
     }
 }
 
-int Formatter::get_daq_segment_idx(const std::vector<std::string>& daq_order,
-                                   const std::string segment) {
-    auto iter = std::find(daq_order.begin(), daq_order.end(), segment);
-    if (iter == daq_order.end()) {
+int Formatter::get_daq_segment_idx(const std::string segment) {
+    auto iter = std::find(_daq_mapping.begin(), _daq_mapping.end(), segment);
+    if (iter == _daq_mapping.end()) {
         std::string err = "Cannot find segment number " + segment
              + " inside DAQ Readout Pattern.";
         LOG_CRT << err;
         throw L1::CannotFormatFitsfile(err);
     }
 
-    int idx = std::distance(daq_order.begin(), iter);
+    int idx = std::distance(_daq_mapping.begin(), iter);
     return idx;
+}
+
+void Formatter::write(Pixel3d& ccds,
+                      long* naxes,
+                      const fs::path& prefix) {
+    int32_t d3 = static_cast<int32_t>(ccds.d3());
+    int32_t*** pix = ccds.get();
+    std::vector<std::future<void>> tasks;
+
+    for (int i = 0; i < ccds.d1(); i++) {
+        int32_t** ccd = pix[i];
+
+        std::ostringstream osname;
+        osname << prefix.string() << i << ".fits";
+
+        fs::path filename(osname.str());
+
+        std::future<void> job = std::async(
+                std::launch::async,
+                &Formatter::write_pix_file,
+                this,
+                ccd,
+                std::ref(d3),
+                naxes,
+                filename);
+        tasks.push_back(std::move(job));
+    }
+
+    for (auto&& x : tasks) {
+        x.get();
+    }
 }

@@ -33,9 +33,9 @@
 
 struct RedisConnectionFixture : IIPBase {
 
-    std::string _log_dir; 
+    std::string _log_dir;
 
-    RedisConnectionFixture() : IIPBase("ForwarderCfg.yaml", "test"){ 
+    RedisConnectionFixture() : IIPBase("ForwarderCfg.yaml", "test"){
         BOOST_TEST_MESSAGE("Setup RedisConnectionTest fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
 
@@ -47,7 +47,7 @@ struct RedisConnectionFixture : IIPBase {
                     _host, _port, _db));
     }
 
-    ~RedisConnectionFixture() { 
+    ~RedisConnectionFixture() {
         BOOST_TEST_MESSAGE("TearDown RedisConnectionTest fixture");
         std::string log = _log_dir + "/test.log.0";
         std::remove(log.c_str());
@@ -78,11 +78,11 @@ BOOST_AUTO_TEST_CASE(setex) {
     _redis->setex("ping", 3, "pong");
 
     // true because just set the value
-    BOOST_CHECK_EQUAL(_redis->exists("ping"), true); 
+    BOOST_CHECK_EQUAL(_redis->exists("ping"), true);
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // false because timer expired and value should be gone
-    BOOST_CHECK_EQUAL(_redis->exists("ping"), false); 
+    BOOST_CHECK_EQUAL(_redis->exists("ping"), false);
 }
 
 BOOST_AUTO_TEST_CASE(exists) {

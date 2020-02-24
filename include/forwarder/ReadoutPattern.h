@@ -24,13 +24,12 @@
 #ifndef READOUT_PATTERN_H
 #define READOUT_PATTERN_H
 
-#include <iostream>
 #include <yaml-cpp/yaml.h>
 
-class ReadoutPattern { 
+class ReadoutPattern {
     public:
         ReadoutPattern(const YAML::Node& n);
-        std::vector<std::string> pattern(const std::string& sensor); 
+        std::vector<std::string> pattern(const std::string& sensor);
 
     private:
         YAML::Node _root;

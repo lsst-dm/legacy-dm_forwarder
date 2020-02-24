@@ -21,7 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
+#ifndef MESSAGEBUILDER_H
+#define MESSAGEBUILDER_H
 
 class MessageBuilder {
     public:
@@ -45,3 +46,5 @@ class MessageBuilder {
                 const std::string& filename,
                 const std::string& desc);
 };
+
+#endif

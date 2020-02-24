@@ -27,7 +27,7 @@
 #include "core/HeartBeat.h"
 #include "core/RedisConnection.h"
 
-void test_execute() { 
+void test_execute() {
     // dummy function
 }
 
@@ -40,7 +40,7 @@ struct BeaconFixture : IIPBase {
     std::string _key;
     int _timeout;
 
-    BeaconFixture() : IIPBase("ForwarderCfg.yaml", "test") { 
+    BeaconFixture() : IIPBase("ForwarderCfg.yaml", "test") {
         BOOST_TEST_MESSAGE("Setup Beacon fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
 
@@ -62,7 +62,7 @@ struct BeaconFixture : IIPBase {
                     host, port, db));
     }
 
-    ~BeaconFixture() { 
+    ~BeaconFixture() {
         BOOST_TEST_MESSAGE("TearDown Beacon fixture");
         std::string log = _log_dir + "/test.log.0";
         std::remove(log.c_str());
@@ -72,7 +72,7 @@ struct BeaconFixture : IIPBase {
 BOOST_FIXTURE_TEST_SUITE(BeaconSuite, BeaconFixture);
 
 BOOST_AUTO_TEST_CASE(constructor) {
-    // A valid Beacon. It should set the key at regular interval and key must 
+    // A valid Beacon. It should set the key at regular interval and key must
     // be valid. Thread is slept for 1 second to give Beacon thread time to
     // spawn, otherwise this will fail.
     Beacon b(_hb);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(constructor) {
 }
 
 BOOST_AUTO_TEST_CASE(clear) {
-    // Beacon thread is killed, so no one is updating key and key shouldn't 
+    // Beacon thread is killed, so no one is updating key and key shouldn't
     // exist after timeout.
     Beacon b(_hb);
     b.clear();

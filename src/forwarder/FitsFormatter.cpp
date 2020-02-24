@@ -21,7 +21,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <vector>
 #include "core/SimpleLogger.h"
 #include "core/Exceptions.h"
@@ -39,8 +38,9 @@ std::vector<std::string> excluded_keywords {
     "XTENSION"
 };
 
-FitsFormatter::FitsFormatter(const std::vector<std::string>& segment_order)
-    : Formatter(segment_order) {
+FitsFormatter::FitsFormatter(const std::vector<std::string>& daq_mapping,
+                             const std::vector<std::string>& hdr_mapping)
+    : Formatter(daq_mapping, hdr_mapping) {
 }
 
 void FitsFormatter::write_header(const fs::path& pix_path,
@@ -52,7 +52,7 @@ void FitsFormatter::write_header(const fs::path& pix_path,
 
         FitsOpener header_file(header_path, READONLY);
         fitsfile* header = header_file.get();
-       
+
         if (pix_file.num_hdus() != header_file.num_hdus()) {
             std::string err = "Pixel and header files have different num HDUs";
             LOG_CRT << err;
@@ -68,7 +68,7 @@ void FitsFormatter::write_header(const fs::path& pix_path,
                 segment_num = get_segment_num(header);
             }
             fits_movabs_hdu(pix, segment_num, IMAGE_HDU, &status);
-         
+
             int header_keys = 0;
             fits_get_hdrspace(header, &header_keys, NULL, &status);
             for (int j = 1; j <= header_keys; j++) {
@@ -113,16 +113,16 @@ int FitsFormatter::get_segment_num(fitsfile* header) {
 
     std::string segment = std::string(segment_value);
     std::string segment_idx = segment.substr(segment.length() - 2);
-    auto idx_it = std::find(_segment_order.begin(), _segment_order.end(),
+    auto idx_it = std::find(_hdr_mapping.begin(), _hdr_mapping.end(),
             segment_idx);
 
-    if (idx_it == _segment_order.end()) {
+    if (idx_it == _hdr_mapping.end()) {
         std::string err = "Segment " + segment_idx +
             " is not defined in Readout Pattern.";
         LOG_CRT << err;
         throw L1::CannotFormatFitsfile(err);
     }
-    int idx = std::distance(_segment_order.begin(), idx_it);
+    int idx = std::distance(_hdr_mapping.begin(), idx_it);
 
     // +2 because fitsfile indexing is 1 based, instead of 0 based and +1 for
     // escaping primary hdu

@@ -25,19 +25,19 @@
 #include "core/SimpleLogger.h"
 #include "forwarder/HeaderFetcher.h"
 
-CURLHandle::CURLHandle() { 
+CURLHandle::CURLHandle() {
     _handle = curl_easy_init();
-    if (!_handle) { 
+    if (!_handle) {
         std::string err = "Cannot create curl handle";
         LOG_CRT << err;
         throw L1::NoCURLHandle(err);
     }
 }
 
-CURLHandle::~CURLHandle() { 
+CURLHandle::~CURLHandle() {
     curl_easy_cleanup(_handle);
 }
 
-CURL* CURLHandle::get() { 
+CURL* CURLHandle::get() {
     return _handle;
 }

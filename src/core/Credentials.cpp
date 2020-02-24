@@ -21,22 +21,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <boost/filesystem.hpp>
 #include "core/Credentials.h"
 #include "core/SimpleLogger.h"
 
 namespace fs = boost::filesystem;
 
-Credentials::Credentials(const std::string& filename) { 
+Credentials::Credentials(const std::string& filename) {
     _credentials = load_secure_file(filename);
 }
 
-YAML::Node Credentials::load_secure_file(const std::string& filename) { 
+YAML::Node Credentials::load_secure_file(const std::string& filename) {
     fs::path home = std::string(getenv("HOME"));
     fs::path dirpath = home / fs::path(".lsst");
     fs::path filepath = home / fs::path(".lsst") / fs::path(filename);
 
-    if (!fs::exists(filepath)) { 
+    if (!fs::exists(filepath)) {
         std::ostringstream message;
         message << "Secure file " << filename << " doesn't exist.";
         std::cout << message.str() << std::endl;
@@ -47,7 +48,7 @@ YAML::Node Credentials::load_secure_file(const std::string& filename) {
     fs::perms dirperm = fs::status(dirpath).permissions();
     fs::perms fileperm = fs::status(filepath).permissions();
 
-    if (dirperm != fs::owner_all) { 
+    if (dirperm != fs::owner_all) {
         std::ostringstream message;
         message <<  "Directory " << dirpath << " is not secure.";
         std::cout << message.str() << std::endl;
@@ -55,7 +56,7 @@ YAML::Node Credentials::load_secure_file(const std::string& filename) {
         LOG_CRT << message.str();
         exit(-1);
     }
-    if (fileperm != (fs::owner_read | fs::owner_write)) { 
+    if (fileperm != (fs::owner_read | fs::owner_write)) {
         std::ostringstream message;
         message << "File " << filepath << " is not secure.";
         std::cout << message.str() << std::endl;
@@ -65,33 +66,33 @@ YAML::Node Credentials::load_secure_file(const std::string& filename) {
     }
 
     LOG_INF << "Loaded secure file from " << filepath;
-    try { 
+    try {
         return YAML::LoadFile(filepath.string());
     }
-    catch (YAML::BadFile& e) { 
+    catch (YAML::BadFile& e) {
         LOG_CRT << "Cannot read secure file " << filepath;
-        exit(-1); 
-    }  
+        exit(-1);
+    }
 }
 
-std::string Credentials::get_user(const std::string& user_alias) { 
-    try { 
+std::string Credentials::get_user(const std::string& user_alias) {
+    try {
         std::string user = _credentials["rabbitmq_users"][user_alias].as<std::string>();
         return user;
     }
-    catch (YAML::TypedBadConversion<std::string>& e) { 
+    catch (YAML::TypedBadConversion<std::string>& e) {
 	LOG_CRT  << "Cannot read rabbitmq username from secure file";
-	exit(-1); 
+	exit(-1);
     }
 }
 
-std::string Credentials::get_passwd(const std::string& passwd_alias) { 
-    try { 
+std::string Credentials::get_passwd(const std::string& passwd_alias) {
+    try {
         std::string passwd = _credentials["rabbitmq_users"][passwd_alias].as<std::string>();
         return passwd;
     }
-    catch (YAML::TypedBadConversion<std::string>& e) { 
+    catch (YAML::TypedBadConversion<std::string>& e) {
 	LOG_CRT << "Cannot read rabbitmq password from secure file";
-	exit(-1); 
+	exit(-1);
     }
 }

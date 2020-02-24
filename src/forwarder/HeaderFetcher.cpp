@@ -21,7 +21,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream> 
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
 #include "forwarder/HeaderFetcher.h"
@@ -34,12 +33,12 @@ long TIMEOUT = 2L;
  * Initialize HeaderFetcher for pulling header information
  *
  * NOTE: This function must be called immediately after the program starts and
- * while it is still only one thread before using libcurl at all. Currently 
+ * while it is still only one thread before using libcurl at all. Currently
  * corrupted file/wrong file is not handled. MD5 or CRC should be good.
  */
-HeaderFetcher::HeaderFetcher() { 
+HeaderFetcher::HeaderFetcher() {
     /// curl_global_init is not thread safe.
-    curl_global_init(CURL_GLOBAL_ALL); 
+    curl_global_init(CURL_GLOBAL_ALL);
 }
 
 /**
@@ -48,10 +47,10 @@ HeaderFetcher::HeaderFetcher() {
  * @param url HTTP url for the header file
  * @param destination target location for written header file
  */
-void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) { 
-    try { 
+void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) {
+    try {
         // set error message array to 0
-        char error_buffer[CURL_ERROR_SIZE]; 
+        char error_buffer[CURL_ERROR_SIZE];
         error_buffer[0] = 0;
 
         FileOpener fp(destination);
@@ -65,9 +64,9 @@ void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) {
         curl_easy_setopt(handle, CURLOPT_FAILONERROR, 1);
         curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
         curl_easy_setopt(handle, CURLOPT_TIMEOUT, TIMEOUT);
-        
+
         CURLcode status = curl_easy_perform(handle);
-        if (status != CURLE_OK) { 
+        if (status != CURLE_OK) {
             fp.set_remove();
             std::string err = "Cannot pull header file from " + url + " because " + \
                           std::string(error_buffer);
@@ -75,19 +74,19 @@ void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) {
             throw L1::CannotFetchHeader(err);
         }
         LOG_INF << "Fetched header file from " << url;
-    } 
-    catch (L1::CannotOpenFile& e) { 
+    }
+    catch (L1::CannotOpenFile& e) {
         throw L1::CannotFetchHeader(e.what());
     }
-    catch (L1::NoCURLHandle& e) { 
+    catch (L1::NoCURLHandle& e) {
         throw L1::CannotFetchHeader(e.what());
     }
-    catch (std::exception& e) { 
+    catch (std::exception& e) {
         LOG_CRT << e.what();
         throw L1::CannotFetchHeader(e.what());
     }
 }
 
-HeaderFetcher::~HeaderFetcher() { 
-    curl_global_cleanup(); 
+HeaderFetcher::~HeaderFetcher() {
+    curl_global_cleanup();
 }

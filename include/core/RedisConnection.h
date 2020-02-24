@@ -25,8 +25,6 @@
 #define REDIS_CONNECTION_H
 
 #include <vector>
-#include <iostream>
-#include <sstream>
 #include "hiredis/hiredis.h"
 #include "core/RedisResponse.h"
 #include "core/SimpleLogger.h"
@@ -43,7 +41,7 @@
  */
 class RedisConnection {
     public:
-        RedisConnection(const std::string& host, 
+        RedisConnection(const std::string& host,
                         const int& port,
                         const int& db);
         ~RedisConnection();

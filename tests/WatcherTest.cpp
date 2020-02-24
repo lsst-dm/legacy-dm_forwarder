@@ -32,7 +32,7 @@
 
 std::atomic<bool> flag{true};
 
-void execute() { 
+void execute() {
     flag = false;
 }
 
@@ -46,7 +46,7 @@ struct WatcherFixture : IIPBase {
     std::string _key;
     int _timeout;
 
-    WatcherFixture() : IIPBase("ForwarderCfg.yaml", "test") { 
+    WatcherFixture() : IIPBase("ForwarderCfg.yaml", "test") {
         BOOST_TEST_MESSAGE("Setup Watcher fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
 
@@ -69,7 +69,7 @@ struct WatcherFixture : IIPBase {
                     host, port, db));
     }
 
-    ~WatcherFixture() { 
+    ~WatcherFixture() {
         BOOST_TEST_MESSAGE("TearDown Watcher fixture");
         std::string log = _log_dir + "/test.log.0";
         std::remove(log.c_str());
@@ -79,7 +79,7 @@ struct WatcherFixture : IIPBase {
 BOOST_FIXTURE_TEST_SUITE(WatcherSuite, WatcherFixture);
 
 BOOST_AUTO_TEST_CASE(start) {
-    // Redis key is set. Then watcher is spawn to check the key. After timeout 
+    // Redis key is set. Then watcher is spawn to check the key. After timeout
     // passed, watcher checks the value. No one is updating the key. It fails
     // and calls the execute function.
     _redis->setex(_key, _timeout, "value");
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(start) {
     BOOST_CHECK_EQUAL(flag.load(), false);
     _watcher->clear();
 
-    // Bad Redis hostname is given. Watcher thread cannot start. So, execute is 
+    // Bad Redis hostname is given. Watcher thread cannot start. So, execute is
     // never called and flag never got set.
     flag = true;
     heartbeat_params hb2 = _hb;

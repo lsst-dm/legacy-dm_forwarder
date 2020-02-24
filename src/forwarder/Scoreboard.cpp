@@ -21,6 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include <algorithm>
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
@@ -32,25 +33,25 @@ int NUM_EVENTS = 2;
 Scoreboard::Scoreboard(const std::string& host,
                        const int& port,
                        const int& db_num,
-                       const std::string& password) { 
+                       const std::string& password) {
     _con = std::unique_ptr<RedisConnection>(
             new RedisConnection(host, port, db_num));
 }
 
-Scoreboard::~Scoreboard() { 
+Scoreboard::~Scoreboard() {
 
 }
 
-bool Scoreboard::is_ready(const std::string& image_id) { 
+bool Scoreboard::is_ready(const std::string& image_id) {
     auto list = _db[image_id];
-    if (list.size() == NUM_EVENTS) { 
-        return true; 
+    if (list.size() == NUM_EVENTS) {
+        return true;
     }
     return false;
-} 
+}
 
-void Scoreboard::add(const std::string& image_id, const std::string& event) { 
-    auto itr = _db.find(image_id); 
+void Scoreboard::add(const std::string& image_id, const std::string& event) {
+    auto itr = _db.find(image_id);
     std::set<std::string> events;
     if (itr != _db.end()) {
         events = _db[image_id];
@@ -60,30 +61,32 @@ void Scoreboard::add(const std::string& image_id, const std::string& event) {
 }
 
 void Scoreboard::remove(const std::string& image_id) {
-    auto itr = _db.find(image_id); 
+    auto itr = _db.find(image_id);
     if (itr == _db.end()) {
-        std::string err = "Cannot remove " + image_id + " because key not found";
-        LOG_CRT << err;
-        throw L1::KeyNotFound(err);
+        std::ostringstream err;
+        err << "Cannot remove " << image_id << " because key not found";
+        LOG_CRT << err.str();
+        throw L1::KeyNotFound(err.str());
     }
     _db.erase(image_id);
 }
 
-void Scoreboard::add_xfer(const std::string& image_id, const xfer_info& xfer) { 
+void Scoreboard::add_xfer(const std::string& image_id, const xfer_info& xfer) {
     _xfer[image_id] = xfer;
 }
 
-xfer_info Scoreboard::get_xfer(const std::string& image_id) { 
-    auto itr = _xfer.find(image_id); 
+xfer_info Scoreboard::get_xfer(const std::string& image_id) {
+    auto itr = _xfer.find(image_id);
     if (itr == _xfer.end()) {
-        std::string err = "Cannot get transfer parameters for Image ID " + image_id +
-                " because key not found";
-        LOG_CRT << err;
-        throw L1::KeyNotFound(err);
+        std::ostringstream err;
+        err << "Cannot get transfer parameters for Image ID " << image_id 
+            << " because key not found";
+        LOG_CRT << err.str();
+        throw L1::KeyNotFound(err.str());
     }
     return _xfer[image_id];
 }
 
-void Scoreboard::set_fwd(const std::string& key, const std::string& body) { 
+void Scoreboard::set_fwd(const std::string& key, const std::string& body) {
     _con->lpush(key.c_str(), body);
 }

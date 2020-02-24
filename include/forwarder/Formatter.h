@@ -26,25 +26,31 @@
 
 #include <fitsio.h>
 #include <boost/filesystem.hpp>
+#include <daq/Pixel3d.h>
+
 
 class Formatter {
     public:
-        Formatter(const std::vector<std::string>& segment_order);
+        Formatter(const std::vector<std::string>& daq_mapping,
+                  const std::vector<std::string>& hdr_mapping);
         void write_pix_file(int32_t**,
                             int32_t&,
                             long*,
-                            const boost::filesystem::path&,
-                            const std::vector<std::string>& daq_order);
-        int get_daq_segment_idx(const std::vector<std::string>& daq_order,
-                                const std::string segment);
+                            const boost::filesystem::path&);
+        int get_daq_segment_idx(const std::string segment);
+        void write(Pixel3d& ccds,
+                   long* naxes,
+                   const boost::filesystem::path& prefix);
 
     protected:
-        std::vector<std::string> _segment_order;
+        std::vector<std::string> _daq_mapping;
+        std::vector<std::string> _hdr_mapping;
 };
 
 class FitsFormatter : public Formatter {
     public:
-        FitsFormatter(const std::vector<std::string>& segment_order);
+        FitsFormatter(const std::vector<std::string>& daq_mapping,
+                      const std::vector<std::string>& hdr_mapping);
         void write_header(const boost::filesystem::path& pix_path,
                           const boost::filesystem::path& header_path);
         bool contains_excluded_key(const char*);

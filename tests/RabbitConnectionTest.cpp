@@ -21,7 +21,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <boost/test/unit_test.hpp>
 #include "core/RabbitConnection.h"
 #include "core/IIPBase.h"
@@ -30,18 +29,18 @@
 struct RabbitConnectionFixture : IIPBase {
 
     std::string _usr, _pwd, _addr;
-    std::string _log_dir; 
+    std::string _log_dir;
 
     RabbitConnectionFixture() : IIPBase("ForwarderCfg.yaml", "test") {
         BOOST_TEST_MESSAGE("Setup RabbitConnection fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
 
         _usr = _credentials->get_user("service_user");
-        _pwd = _credentials->get_passwd("service_passwd"); 
+        _pwd = _credentials->get_passwd("service_passwd");
         _addr = _config_root["BASE_BROKER_ADDR"].as<std::string>();
     }
 
-    ~RabbitConnectionFixture() { 
+    ~RabbitConnectionFixture() {
         BOOST_TEST_MESSAGE("TearDown RabbitConnection fixture");
         std::string log = _log_dir + "/test.log.0";
         std::remove(log.c_str());
@@ -60,7 +59,7 @@ BOOST_AUTO_TEST_CASE(constructor) {
     BOOST_CHECK_THROW(RabbitConnection r(bad_url), L1::RabbitConnectionError);
 
     // bad ip
-    std::string bad_ip = "amqp://" + _usr + ":" + _pwd 
+    std::string bad_ip = "amqp://" + _usr + ":" + _pwd
         + "@141.142.238.9:5672/%2fhello";
     BOOST_CHECK_THROW(RabbitConnection r(bad_url), L1::RabbitConnectionError);
 
@@ -70,7 +69,7 @@ BOOST_AUTO_TEST_CASE(constructor) {
     BOOST_CHECK_THROW(RabbitConnection r(bad_host), L1::RabbitConnectionError);
 
     // random string
-    BOOST_CHECK_THROW(RabbitConnection r("helloworld"), 
+    BOOST_CHECK_THROW(RabbitConnection r("helloworld"),
             L1::RabbitConnectionError);
 }
 

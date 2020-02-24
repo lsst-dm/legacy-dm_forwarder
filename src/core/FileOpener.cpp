@@ -28,8 +28,8 @@
 
 namespace fs = boost::filesystem;
 
-FileOpener::FileOpener(const fs::path& file) : _remove(false), _filename(file) { 
-    if (fs::exists(file)) { 
+FileOpener::FileOpener(const fs::path& file) : _remove(false), _filename(file) {
+    if (fs::exists(file)) {
         // Removing is safe for synchronous application. If there is
         // asynchronous access to file. remove should be carefully
         // handled.
@@ -37,23 +37,23 @@ FileOpener::FileOpener(const fs::path& file) : _remove(false), _filename(file) {
         LOG_WRN << wrn;
         remove(file.c_str());
     }
-    _file = fopen(file.c_str(), "w"); 
-    if (_file == NULL) { 
-        const std::string err = "Cannot open " + file.string() + 
+    _file = fopen(file.c_str(), "w");
+    if (_file == NULL) {
+        const std::string err = "Cannot open " + file.string() +
             " because " + std::string(strerror(errno));
         LOG_CRT << err;
         throw L1::CannotOpenFile(err);
     }
 }
 
-FileOpener::~FileOpener() { 
+FileOpener::~FileOpener() {
     fclose(_file);
-    if (_remove) { 
+    if (_remove) {
         remove(_filename.c_str());
     }
 }
 
-FILE* FileOpener::get() { 
+FILE* FileOpener::get() {
     return _file;
 }
 

@@ -29,7 +29,7 @@
 #include <mutex>
 #include <condition_variable>
 
-struct heartbeat_params { 
+struct heartbeat_params {
     std::string redis_host;
     int redis_port;
     int redis_db;
@@ -40,9 +40,9 @@ struct heartbeat_params {
     std::function<void ()> action;
 };
 
-class Watcher { 
+class Watcher {
     public:
-        void start(const heartbeat_params params); 
+        void start(const heartbeat_params params);
         void clear();
 
     private:
@@ -53,7 +53,7 @@ class Watcher {
         void check(const heartbeat_params params);
 };
 
-class Beacon { 
+class Beacon {
     public:
         Beacon(const heartbeat_params params);
         void clear();

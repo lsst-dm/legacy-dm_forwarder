@@ -4,7 +4,6 @@ project (lsst_dm_forwarder)
 # Build forwarder objects
 set(OBJ
     "CURLHandle.cpp"
-    "DAQFetcher.cpp"
     "FileSender.cpp"
     "FitsOpener.cpp"
     "FitsFormatter.cpp"
@@ -12,10 +11,8 @@ set(OBJ
     "HeaderFetcher.cpp"
     "MessageBuilder.cpp"
     "miniforwarder.cpp"
-    "PixelArray.cpp"
     "ReadoutPattern.cpp"
     "Scoreboard.cpp"
-    "StripeArray.cpp"
 )
 
 add_library(lsst_dm_forwarder STATIC ${OBJ})
@@ -37,10 +34,14 @@ target_include_directories(dm_forwarder PRIVATE
 
 target_link_libraries(dm_forwarder PRIVATE
     lsst_dm_forwarder
+    lsst_dm_forwarder_daq
     lsst_iip_core
     ${daq_ims}
+    ${daq_xds}
     ${daq_daq}
+    ${daq_dcs}
     ${daq_dsi}
+    ${daq_rms}
     ${boost_log}
     ${boost_thread}
     ${boost_filesystem}

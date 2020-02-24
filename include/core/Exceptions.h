@@ -24,157 +24,170 @@
 #ifndef EXCEPTIONS_H
 #define EXCEPTIONS_H
 
-#include <iostream> 
+#include <string>
 #include <exception>
 
 /**
  * Exception classes for CTRL_IIP package
  */
-namespace L1 { 
+namespace L1 {
     /**
-     * Base exception class inherited from `std::exception` for CTRL_IIP 
+     * Base exception class inherited from `std::exception` for CTRL_IIP
      * package that will be extended further to throw custom exceptions.
      */
-    class L1Exception: public std::exception { 
-        public: 
+    class L1Exception: public std::exception {
+        public:
             /**
              * Construct Base Exception
              *
              * @param msg error message
              */
             L1Exception(const std::string& msg){
-                errormsg = msg; 
-            } 
+                errormsg = msg;
+            }
 
             /**
              * virutal method for overwriting std::exception throw method
              *
              * @return error message
              */
-            virtual const char* what() const throw() { 
-                return errormsg.c_str(); 
-            } 
+            virtual const char* what() const throw() {
+                return errormsg.c_str();
+            }
         private:
-            std::string errormsg; 
+            std::string errormsg;
 
-    }; 
+    };
 
     /**
      * Throws when YAML-CPP library throws internal exception
      */
-    class YamlKeyError : public L1Exception { 
-        public: 
+    class YamlKeyError : public L1Exception {
+        public:
             YamlKeyError(const std::string& msg) : L1Exception(msg) {}
-    }; 
+    };
 
     /**
      * Throws when `RabbitConnection` cannot connect to RabbitMQ server
      */
-    class RabbitConnectionError : public L1Exception { 
-        public: 
+    class RabbitConnectionError : public L1Exception {
+        public:
             RabbitConnectionError(const std::string& msg) : L1Exception(msg) {}
-    }; 
+    };
 
     /**
      * Throws when SimplePublisher cannot connect to RabbitMQ Server or
      * cannot publish messages to queue
      */
-    class PublisherError : public L1Exception { 
-        public: 
+    class PublisherError : public L1Exception {
+        public:
             PublisherError(const std::string& msg) : L1Exception(msg) {}
-    }; 
+    };
 
     /**
      * Throws when Consumer cannot connect to RabbitMQ Server or cannot
      * consume messages
      */
-    class ConsumerError : public L1Exception { 
-        public: 
+    class ConsumerError : public L1Exception {
+        public:
             ConsumerError(const std::string& msg) : L1Exception(msg) {}
-    }; 
+    };
 
     /**
      * Throws when application cannot create directory
      */
-    class CannotCreateDir: public L1Exception { 
-        public: 
-            CannotCreateDir(const std::string& msg) : L1Exception (msg) {} 
-    }; 
+    class CannotCreateDir: public L1Exception {
+        public:
+            CannotCreateDir(const std::string& msg) : L1Exception (msg) {}
+    };
 
     /**
      * Throws when application cannot copy file(most likely bbcp)
      */
-    class CannotCopyFile: public L1Exception { 
-        public: 
-            CannotCopyFile(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class CannotCopyFile: public L1Exception {
+        public:
+            CannotCopyFile(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when application cannot open file
      */
-    class CannotOpenFile: public L1Exception { 
-        public: 
-            CannotOpenFile(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class CannotOpenFile: public L1Exception {
+        public:
+            CannotOpenFile(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when `HeaderFetcher` cannot fetch header file from HeaderService
      */
-    class CannotFetchHeader: public L1Exception { 
-        public: 
-            CannotFetchHeader(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class CannotFetchHeader: public L1Exception {
+        public:
+            CannotFetchHeader(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when `CURLHandle` cannot create handle for HTTP connection
      */
-    class NoCURLHandle: public L1Exception { 
-        public: 
-            NoCURLHandle(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class NoCURLHandle: public L1Exception {
+        public:
+            NoCURLHandle(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when Cfitsio library related function calls return error status
      */
-    class CfitsioError: public L1Exception { 
-        public: 
-            CfitsioError(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class CfitsioError: public L1Exception {
+        public:
+            CfitsioError(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when forwarder cannot assemble fitsfile with header file
      */
-    class CannotFormatFitsfile: public L1Exception { 
-        public: 
-            CannotFormatFitsfile(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class CannotFormatFitsfile: public L1Exception {
+        public:
+            CannotFormatFitsfile(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when forwarder cannot fetch pixel data from DAQ hardware
      */
-    class CannotFetchPixel: public L1Exception { 
-        public: 
-            CannotFetchPixel(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class CannotFetchPixel: public L1Exception {
+        public:
+            CannotFetchPixel(const std::string& msg) : L1Exception(msg) {}
+    };
 
     /**
      * Throws when Scoreboard cannot find key inside its data structure to
      * operate on
      */
-    class KeyNotFound: public L1Exception { 
-        public: 
-            KeyNotFound(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class KeyNotFound: public L1Exception {
+        public:
+            KeyNotFound(const std::string& msg) : L1Exception(msg) {}
+    };
 
-    class RedisError: public L1Exception { 
-        public: 
-            RedisError(const std::string& msg) : L1Exception(msg) {} 
-    }; 
+    class RedisError: public L1Exception {
+        public:
+            RedisError(const std::string& msg) : L1Exception(msg) {}
+    };
 
-    class InvalidReadoutPattern: public L1Exception { 
-        public: 
+    class InvalidReadoutPattern: public L1Exception {
+        public:
             InvalidReadoutPattern(const std::string& msg) : L1Exception(msg) {}
-    }; 
+    };
+
+    /**
+     * DAQ v4 related
+     */
+    class InvalidLocation: public L1Exception {
+        public:
+            InvalidLocation(const std::string& msg) : L1Exception(msg) {}
+    };
+
+    class InvalidData: public L1Exception {
+        public:
+            InvalidData(const std::string& msg) : L1Exception(msg) {}
+    };
 };
 
 #endif

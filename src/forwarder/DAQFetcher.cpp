@@ -21,7 +21,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include "daq/Location.hh"
 #include "ims/Image.hh"
 #include "ims/Slice.hh"
@@ -100,7 +99,7 @@ int32_t* DAQFetcher::fetch_ccd(const std::string& image_id,
             throw L1::CannotFetchPixel(err);
         }
         IMS::Image image(image_id.c_str(), _store);
-       
+
         std::string bay_board = raft + "/" + ccd[0];
 
         // Should throw exception from DAQ api, instead of SIGABRT
@@ -121,7 +120,7 @@ int32_t* DAQFetcher::fetch_ccd(const std::string& image_id,
         while (canAdvance) {
             decode(slice, stripes, ccd[1], total);
             total += slice.stripes();
-            canAdvance = slice.advance(); 
+            canAdvance = slice.advance();
         }
 
         _formatter.write_pix_file(stripes, total, naxes, filepath, daq_order);
