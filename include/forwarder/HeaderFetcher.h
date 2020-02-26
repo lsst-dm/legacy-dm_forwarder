@@ -28,17 +28,17 @@
 #include <curl/curl.h>
 #include <stdio.h>
 
-class HeaderFetcher { 
+class HeaderFetcher {
     public:
         HeaderFetcher();
         ~HeaderFetcher();
         void fetch(const std::string&, const boost::filesystem::path&);
-  
+
     private:
         CURL* handle;
 };
 
-class FileOpener { 
+class FileOpener {
     public:
         FileOpener(const boost::filesystem::path&);
         ~FileOpener();
@@ -51,7 +51,7 @@ class FileOpener {
         boost::filesystem::path _filename;
 };
 
-class CURLHandle { 
+class CURLHandle {
     public:
         CURLHandle();
         ~CURLHandle();

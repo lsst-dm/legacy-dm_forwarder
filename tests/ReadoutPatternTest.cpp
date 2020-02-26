@@ -29,31 +29,31 @@
 #include "core/Exceptions.h"
 #include "forwarder/ReadoutPattern.h"
 
-struct ReadoutPatternFixture : IIPBase { 
+struct ReadoutPatternFixture : IIPBase {
 
     std::unique_ptr<ReadoutPattern> _p;
-    std::string _log_dir; 
+    std::string _log_dir;
 
-    ReadoutPatternFixture() : IIPBase("ForwarderCfg.yaml", "test") { 
+    ReadoutPatternFixture() : IIPBase("ForwarderCfg.yaml", "test") {
         BOOST_TEST_MESSAGE("Setup ReadoutPattern fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
         _p = std::unique_ptr<ReadoutPattern>(new ReadoutPattern(_config_root));
     }
 
-    ~ReadoutPatternFixture() { 
+    ~ReadoutPatternFixture() {
         BOOST_TEST_MESSAGE("TearDown ReadoutPattern fixture");
         std::string log = _log_dir + "/test.log.0";
         std::remove(log.c_str());
     }
 };
 
-BOOST_FIXTURE_TEST_SUITE(ReadoutPatternTest, ReadoutPatternFixture); 
+BOOST_FIXTURE_TEST_SUITE(ReadoutPatternTest, ReadoutPatternFixture);
 
-BOOST_AUTO_TEST_CASE(constructor) { 
-    BOOST_CHECK_NO_THROW(_p); 
+BOOST_AUTO_TEST_CASE(constructor) {
+    BOOST_CHECK_NO_THROW(_p);
 }
 
-BOOST_AUTO_TEST_CASE(pattern) { 
+BOOST_AUTO_TEST_CASE(pattern) {
     BOOST_CHECK_THROW(_p->pattern("ABC"), L1::InvalidReadoutPattern);
     BOOST_CHECK_EQUAL(_p->pattern("WFS").size(), 16);
     BOOST_CHECK_EQUAL(_p->pattern("ITL")[0], "00");

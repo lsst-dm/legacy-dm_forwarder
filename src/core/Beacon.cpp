@@ -28,43 +28,43 @@
 #include "core/SimpleLogger.h"
 #include "core/Exceptions.h"
 
-Beacon::Beacon(const heartbeat_params params) { 
+Beacon::Beacon(const heartbeat_params params) {
     _stop = false;
     std::thread t(&Beacon::ping, this, params);
     t.detach();
 }
 
-void Beacon::clear() { 
+void Beacon::clear() {
     std::lock_guard<std::mutex> lk(_mutex);
     _stop = true;
     _cond.notify_all();
 }
 
-void Beacon::ping(const heartbeat_params& params) { 
+void Beacon::ping(const heartbeat_params& params) {
     const std::string host = params.redis_host;
     const int port = params.redis_port;
     const int db = params.redis_db;
 
-    const std::string key = params.key; 
+    const std::string key = params.key;
     const int seconds_to_expire = params.seconds_to_expire;
     const int seconds_to_update = params.seconds_to_update;
 
     try {
         RedisConnection redis(host, port, db);
         LOG_INF << "Beacon started ...";
-        while (!_stop.load()) { 
+        while (!_stop.load()) {
             redis.setex(key, seconds_to_expire, "pong");
 
             std::unique_lock<std::mutex> lk(_mutex);
-            std::cv_status status = _cond.wait_for(lk, 
+            std::cv_status status = _cond.wait_for(lk,
                     std::chrono::seconds(seconds_to_update));
         }
     }
-    catch(L1::RedisError& e) { 
+    catch(L1::RedisError& e) {
         LOG_CRT << "Cannot start Beacon because " << e.what();
         return;
     }
-    catch(std::exception& e) { 
+    catch(std::exception& e) {
         LOG_CRT << "Cannot start Beacon because " << e.what();
         return;
     }

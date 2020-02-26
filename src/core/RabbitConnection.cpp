@@ -21,21 +21,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
 #include "core/RabbitConnection.h"
 
-RabbitConnection::RabbitConnection(const std::string& url) { 
-    try { 
+RabbitConnection::RabbitConnection(const std::string& url) {
+    try {
         _channel = AmqpClient::Channel::CreateFromUri(url);
         LOG_INF << "Made connection to RabbitMQ Server";
     }
-    catch (std::exception& e) { 
-        std::string err = "Cannot connect to RabbitMQ Server because " + std::string(e.what());
-        LOG_CRT << err;
-        throw L1::RabbitConnectionError(err);
+    catch (std::exception& e) {
+        std::ostringstream err;
+        err << "Cannot connect to RabbitMQ Server because " << e.what();
+        LOG_CRT << err.str();
+        throw L1::RabbitConnectionError(err.str());
     }
 }
 
-RabbitConnection::~RabbitConnection() { 
+RabbitConnection::~RabbitConnection() {
 }

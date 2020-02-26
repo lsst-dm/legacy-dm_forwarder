@@ -24,7 +24,6 @@
 #ifndef CONSUMER_H
 #define CONSUMER_H
 
-#include <iostream>
 #include "core/RabbitConnection.h"
 
 /**
@@ -33,7 +32,7 @@
  * Consumer is amqp message publishing object to RabbitMQ Server. It
  * extends connection to RabbitMQ server from RabbitConnection object.
  */
-class Consumer : public RabbitConnection { 
+class Consumer : public RabbitConnection {
     public:
         /**
          * Creates connection to RabbitMQ Server
@@ -44,10 +43,10 @@ class Consumer : public RabbitConnection {
          *
          * @throws L1::ConsumerError Thrown if Consumer cannot connect
          *      to RabbitMQ Server
-         * 
+         *
          * @exceptsafe Strong exception guarantee
          */
-        Consumer(const std::string& url, const std::string& queue); 
+        Consumer(const std::string& url, const std::string& queue);
 
         /**
          * Destruct Consumer
@@ -59,14 +58,14 @@ class Consumer : public RabbitConnection {
          *
          * @param on_message Function pointer to handle messages
          *
-         * @throws L1::ConsumerError Thrown if Consumer cannot consume 
+         * @throws L1::ConsumerError Thrown if Consumer cannot consume
          *      messages from RabbitMQ Server
          */
         void run(std::function<void (const std::string&)> on_message);
 
     private:
         // RabbitMQ consume queue name
-        std::string _queue; 
-}; 
+        std::string _queue;
+};
 
 #endif

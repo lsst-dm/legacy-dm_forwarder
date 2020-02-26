@@ -21,7 +21,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <cstdio>
 #include <unistd.h> // gethostname
 #include <netdb.h>
@@ -37,9 +36,10 @@ miniforwarder::miniforwarder(const std::string& config,
                              const std::string& log) : IIPBase(config, log)
                                  , _hdr()
                                  , _readoutpattern(_config_root) {
-    std::string work_dir, ip_host, redis_host, xfer_option;
+    std::string work_dir, ip_host, redis_host, xfer_option, folder;
     int redis_port, redis_db;
-    std::vector<std::string> segment_order;
+    std::vector<std::string> hdr_mapping;
+    std::vector<std::string> daq_mapping;
     try {
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
@@ -47,7 +47,12 @@ miniforwarder::miniforwarder(const std::string& config,
         redis_port = _config_root["REDIS_PORT"].as<int>();
         redis_db = _config_root["REDIS_DB"].as<int>();
         xfer_option = _config_root["XFER_OPTION"].as<std::string>();
-        segment_order = _config_root["SEGMENT_ORDER"]
+
+        // DAQ configurations
+        folder = _config_root["FOLDER"].as<std::string>();
+        hdr_mapping = _config_root["HDR_MAPPING"]
+            .as<std::vector<std::string>>();
+        daq_mapping = _config_root["DAQ_MAPPING"]
             .as<std::vector<std::string>>();
 
         _name = _config_root["NAME"].as<std::string>();
@@ -114,10 +119,11 @@ miniforwarder::miniforwarder(const std::string& config,
 
     _db = std::unique_ptr<Scoreboard>(
             new Scoreboard(redis_host, redis_port, redis_db, redis_pwd));
-    _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition.c_str(),
-                segment_order));
+    _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(_partition, folder,
+                daq_mapping, hdr_mapping));
     _sender = std::unique_ptr<FileSender>(new FileSender(xfer_option));
-    _fmt = std::unique_ptr<FitsFormatter>(new FitsFormatter(segment_order));
+    _fmt = std::unique_ptr<FitsFormatter>(new FitsFormatter(daq_mapping,
+                hdr_mapping));
 
     _forwarder_list = "forwarder_list";
     _association_key = "f99_association";
@@ -241,20 +247,9 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         const xfer_info xfer = _db->get_xfer(image_id);
         const std::string raft = xfer.raft;
         const std::vector<std::string> ccds = xfer.ccds;
-        const std::string sensor = "WFS";
 
-        for (auto& ccd : ccds) {
-            const std::string filename = image_id + "--R" + raft +
-                "S" + ccd + ".fits";
-            const fs::path filepath = _fits_path / fs::path(filename);
-            if (!check_valid_board(raft, ccd)) {
-                std::string err = "Raft/ccd " + raft + "/" + ccd +
-                    " does not exist in partition " + _partition;
-                LOG_CRT << err;
-                throw L1::CannotFetchPixel(err);
-            }
-            std::vector<std::string> pattern = _readoutpattern.pattern(sensor);
-            _daq->fetch(image_id, raft, ccd, "WaveFront", filepath, pattern);
+        for (auto&& location : ccds) {
+            _daq->fetch(_fits_path, image_id, location);
         }
 
         _db->add(image_id, "end_readout");
@@ -315,6 +310,7 @@ void miniforwarder::publish_ack(const YAML::Node& n) {
         const std::string msg = _builder.build_ack(msg_type, _name,
                 ack_id, "True");
         _pub->publish_message(reply_q, msg);
+        LOG_DBG << "Published ack for " << msg_type << " with values: " << msg;
     }
     catch (L1::PublisherError& e) { }
     catch (std::exception& e) {
@@ -364,19 +360,31 @@ void miniforwarder::assemble(const std::string& image_id) {
             const std::string job_num = xfer.job_num;
             const fs::path header = _header_path / fs::path(image_id);
 
-            for (auto& ccd : ccds) {
-                const std::string filename = image_id + "--R" + raft +
-                    "S" + ccd + ".fits";
-                const fs::path pix = _fits_path / fs::path(filename);
-                const fs::path to = fs::path(xfer.target) / fs::path(filename);
+            for (auto& location : ccds) {
+                std::string new_location(location);
+                size_t found = new_location.find("/");
+                if (found == std::string::npos) {
+                    std::ostringstream err;
+                    err << "Location " << location 
+                        << " is not a valid string with `/`";
+                    LOG_CRT << err.str();
+                    throw L1::CannotFormatFitsfile(err.str());
+                }
+                new_location.replace(found, 1, "S");
+
+                const fs::path filename = image_id + "-R" + new_location
+                        + "0.fits";
+                const fs::path pix = _fits_path / filename;
+                const fs::path to = fs::path(xfer.target) / filename;
 
                 _fmt->write_header(pix, header);
                 _sender->send(pix, to);
-                publish_xfer_complete(image_id, to.string(), session_id, job_num);
+                publish_xfer_complete(image_id, to.string(), session_id, 
+                        job_num);
 
                 LOG_INF << "********* READOUT COMPLETE for " << image_id;
 
-                const std::string msg = filename +
+                const std::string msg = filename.string() +
                     " is successfuly transferred to " + to.string();
 
                 const std::string file_path = to.string().substr(
@@ -464,7 +472,8 @@ void miniforwarder::register_fwd() {
     }
     freeaddrinfo(infoptr);
 
-    const std::string msg = _builder.build_fwd_info(hostname, ip_addr, _consume_q);
+    const std::string msg = _builder.build_fwd_info(hostname, ip_addr,
+            _consume_q);
     _db->set_fwd(_forwarder_list, msg);
     LOG_INF << "Set forwarder in redis list";
 }

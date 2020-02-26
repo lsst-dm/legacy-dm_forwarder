@@ -23,7 +23,7 @@ ROOT:
 
     ats: [ 00/0 ]
     comcam: [ 22/0, 22/1, 22/2 ]
-    
+
     # RabbitMQ configuration
     BASE_BROKER_ADDR: 141.142.238.15:5672/%2ftest_at
     CONSUME_QUEUE: f99_consume

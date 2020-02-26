@@ -1,5 +1,5 @@
 import os
-import pika 
+import pika
 
 rmq_user = os.environ['RMQ_USR']
 rmq_pwd = os.environ['RMQ_PWD']

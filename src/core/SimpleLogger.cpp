@@ -21,47 +21,55 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+#include <boost/filesystem.hpp>
 #include "core/SimpleLogger.h"
 
-std::ostream& operator<< (std::ostream& strm, severity_level level) { 
-    static const char* log_levels[] = { 
-        "debug", 
-        "info", 
+std::ostream& operator<< (std::ostream& strm, severity_level level) {
+    static const char* log_levels[] = {
+        "debug",
+        "info",
         "critical",
         "warning"
-    }; 
+    };
 
-    if (static_cast< std::size_t >(level) < sizeof(log_levels) / sizeof(*log_levels)) { 
-        strm << log_levels[level]; 
-    } 
-    else { 
-        strm << static_cast< int >(level); 
-    } 
+    if (static_cast< std::size_t >(level) < sizeof(log_levels) / sizeof(*log_levels)) {
+        strm << log_levels[level];
+    }
+    else {
+        strm << static_cast< int >(level);
+    }
     return strm;
-} 
+}
 
-void init_log(const std::string& filepath, const std::string& filename) { 
-    logging::add_common_attributes(); 
-    logging::core::get()->add_global_attribute("UTCTime", attrs::utc_clock());
-    boost::shared_ptr< file_sink > sink(new file_sink(
-        keywords::file_name = filepath + "/" + filename + ".log.%N", 
-        keywords::rotation_size = 1 * 1024 * 1024, 
-        keywords::auto_flush = true,
-        keywords::open_mode = std::ios_base::app
-    ));  
+void init_log(const std::string& filepath, const std::string& filename) {
+    try {
+        logging::add_common_attributes();
+        logging::core::get()->add_global_attribute("UTCTime", attrs::utc_clock());
+        boost::shared_ptr< file_sink > sink(new file_sink(
+            keywords::file_name = filepath + "/" + filename + ".log.%N",
+            keywords::rotation_size = 1 * 1024 * 1024,
+            keywords::auto_flush = true,
+            keywords::open_mode = std::ios_base::app
+        ));
 
-    sink->set_formatter(
-        expr::stream
-            << std::left
-            << std::setw(10) << std::setfill(' ') << severity
-            << expr::format_date_time< boost::posix_time::ptime >("UTCTime", "%Y-%m-%d %H:%M:%S.%f") 
-            << expr::smessage
-    ); 
+        sink->set_formatter(
+            expr::stream
+                << std::left
+                << std::setw(10) << std::setfill(' ') << severity
+                << expr::format_date_time< boost::posix_time::ptime >("UTCTime", "%Y-%m-%d %H:%M:%S.%f")
+                << expr::smessage
+        );
 
-    sink->locked_backend()->set_file_collector(sinks::file::make_collector(
-        keywords::target = filepath,
-        keywords::max_files = 10
-    )); 
+        sink->locked_backend()->set_file_collector(sinks::file::make_collector(
+            keywords::target = filepath,
+            keywords::max_files = 10
+        ));
 
-    logging::core::get()->add_sink(sink); 
-} 
+        logging::core::get()->add_sink(sink);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        std::cout << "[CRITICAL] Cannot create log file " << filename << " at " << filepath
+            << " because " << e.code().message() << std::endl;
+    }
+}

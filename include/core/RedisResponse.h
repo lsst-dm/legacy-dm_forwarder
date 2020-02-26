@@ -24,18 +24,17 @@
 #ifndef REDIS_RESPONSE_H
 #define REDIS_RESPONSE_H
 
-#include <iostream>
 #include "hiredis/hiredis.h"
 #include "core/SimpleLogger.h"
 #include "core/Exceptions.h"
 
-class RedisResponse { 
+class RedisResponse {
     public:
-        RedisResponse(redisContext* c, 
-                      const char* fmt, 
+        RedisResponse(redisContext* c,
+                      const char* fmt,
                       const char* value,
                       size_t size);
-        RedisResponse(redisContext* c, const char* cmd); 
+        RedisResponse(redisContext* c, const char* cmd);
         ~RedisResponse();
 
         bool is_err();

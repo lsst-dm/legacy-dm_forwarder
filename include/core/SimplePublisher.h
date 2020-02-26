@@ -24,7 +24,6 @@
 #ifndef SIMPLE_PUBLISHER_H
 #define SIMPLE_PUBLISHER_H
 
-#include <iostream>
 #include "core/RabbitConnection.h"
 
 /**
@@ -33,8 +32,8 @@
  * SimplePublisher is amqp message publishing object to RabbitMQ Server. It
  * extends connection to RabbitMQ server from RabbitConnection object.
  */
-class SimplePublisher : public RabbitConnection { 
-    public: 
+class SimplePublisher : public RabbitConnection {
+    public:
         /**
          * Creates connection to RabbitMQ Server
          *
@@ -43,10 +42,10 @@ class SimplePublisher : public RabbitConnection {
          *
          * @throws L1::PublisherError Thrown if SimplePublisher cannot connect
          *      to RabbitMQ Server
-         * 
+         *
          * @exceptsafe Strong exception guarantee
          */
-        SimplePublisher(const std::string& url); 
+        SimplePublisher(const std::string& url);
 
         /**
          * Destruct SimplePublisher
@@ -58,13 +57,13 @@ class SimplePublisher : public RabbitConnection {
          *
          * @param queue RabbitMQ queue to talk to
          * @param body Message body
-         * 
-         * @throws L1::PublisherError Thrown if it cannot publish message to 
+         *
+         * @throws L1::PublisherError Thrown if it cannot publish message to
          *      queue
          *
          * @exceptsafe Strong exception guarantee
          */
-        void publish_message(const std::string& queue, const std::string& body); 
+        void publish_message(const std::string& queue, const std::string& body);
 };
 
 #endif

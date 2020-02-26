@@ -21,39 +21,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream> 
-#include <exception> 
+#include <exception>
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
 #include "core/Consumer.h"
 
 const unsigned int sleeping_ms = 5000;
-const std::string exchange = "message"; 
-  
-Consumer::Consumer(const std::string& url, const std::string& queue) 
-    try : RabbitConnection(url), _queue(queue) { 
-} 
-catch (L1::RabbitConnectionError& e) { 
+const std::string exchange = "message";
+
+Consumer::Consumer(const std::string& url, const std::string& queue)
+    try : RabbitConnection(url), _queue(queue) {
+}
+catch (L1::RabbitConnectionError& e) {
     throw L1::ConsumerError(e.what());
 }
 
-Consumer::~Consumer() { 
+Consumer::~Consumer() {
 }
 
-void Consumer::run(std::function<void (const std::string&)> on_message) { 
+void Consumer::run(std::function<void (const std::string&)> on_message) {
     try {
-        std::string consume_tag = _channel->BasicConsume(_queue); 
+        std::string consume_tag = _channel->BasicConsume(_queue);
         LOG_INF << "==== Started consuming messages from " << _queue;
         while (true) {
-            AmqpClient::Envelope::ptr_t envelope = _channel->BasicConsumeMessage(consume_tag); 
-            AmqpClient::BasicMessage::ptr_t messageEnv = envelope->Message(); 
+            AmqpClient::Envelope::ptr_t envelope = _channel->BasicConsumeMessage(consume_tag);
+            AmqpClient::BasicMessage::ptr_t messageEnv = envelope->Message();
             std::string message = messageEnv->Body();
             on_message(message);
         }
     }
-    catch (std::exception& e) { 
+    catch (std::exception& e) {
         std::string err = "Cannot consume messages from " + _queue + " because " + e.what();
-        LOG_CRT << err; 
+        LOG_CRT << err;
         throw L1::ConsumerError(err);
     }
-} 
+}

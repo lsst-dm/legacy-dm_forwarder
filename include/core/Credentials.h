@@ -24,21 +24,20 @@
 #ifndef CREDENTIALS_H
 #define CREDENTIALS_H
 
-#include <iostream>
 #include <yaml-cpp/yaml.h>
 
 /**
  * Credential object for CTRL_IIP package authentication
  */
 class Credentials {
-    public: 
+    public:
         /**
          * Constructs Credential
          *
          * Loads secure file to read auth credentials
          *
          * @param filename secure file name
-         * @throws No exception thrown but application will `exit` if 
+         * @throws No exception thrown but application will `exit` if
          *      secure file is not found
          */
         Credentials(const std::string& filename);
@@ -48,7 +47,7 @@ class Credentials {
          *
          * @param filename secure file name
          * @return Root node of secure file
-         * @throws No exception thrown but application will `exit` if 
+         * @throws No exception thrown but application will `exit` if
          *      secure file is not found
          */
         YAML::Node load_secure_file(const std::string& filename);
@@ -59,7 +58,7 @@ class Credentials {
          * @param user_alias RabbitMQ user alias
          * @return RabbitMQ username
          *
-         * @throws No exception thrown but application will `exit` if 
+         * @throws No exception thrown but application will `exit` if
          *      user alias key does not exist in secure file
          */
         std::string get_user(const std::string& user_alias);
@@ -70,7 +69,7 @@ class Credentials {
          * @param passwd_alias RabbitMQ passwd alias
          * @return RabbitMQ password
          *
-         * @throws No exception thrown but application will `exit` if 
+         * @throws No exception thrown but application will `exit` if
          *      password alias key does not exist in secure file
          */
         std::string get_passwd(const std::string& passwd_alias);

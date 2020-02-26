@@ -28,7 +28,7 @@
 #include "core/Exceptions.h"
 #include "core/SimpleLogger.h"
 
-void Watcher::start(const heartbeat_params params) { 
+void Watcher::start(const heartbeat_params params) {
     clear();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -37,27 +37,27 @@ void Watcher::start(const heartbeat_params params) {
     t.detach();
 }
 
-void Watcher::clear() { 
+void Watcher::clear() {
     std::lock_guard<std::mutex> lk(_mutex);
     _stop = true;
     _cond.notify_all();
 }
 
-void Watcher::check(const heartbeat_params params) { 
+void Watcher::check(const heartbeat_params params) {
     const std::string host = params.redis_host;
     const int port = params.redis_port;
     const int db = params.redis_db;
 
-    const std::string key = params.key; 
+    const std::string key = params.key;
     const int timeout = params.seconds_to_expire;
     auto execute = params.action;
 
-    try { 
+    try {
         RedisConnection redis(host, port, db);
         LOG_INF << "Watcher started";
-        while (!_stop.load()) { 
+        while (!_stop.load()) {
             bool exists = redis.exists(key);
-            if (!exists) { 
+            if (!exists) {
                 LOG_CRT << "Did not receive heartbeat from Commandable SAL"
                     << " Component(CSC)";
                 execute();
@@ -65,15 +65,15 @@ void Watcher::check(const heartbeat_params params) {
             }
 
             std::unique_lock<std::mutex> lk(_mutex);
-            std::cv_status status = _cond.wait_for(lk, 
+            std::cv_status status = _cond.wait_for(lk,
                     std::chrono::seconds(timeout));
         }
     }
-    catch(L1::RedisError& e) { 
+    catch(L1::RedisError& e) {
         LOG_CRT << "Cannot start Watcher because " << e.what();
-        return; 
+        return;
     }
-    catch(std::exception& e) { 
+    catch(std::exception& e) {
         LOG_CRT << "Cannot start Watcher because " << e.what();
         return;
     }

@@ -39,7 +39,7 @@ class IIPBase {
         /**
          * Construct IIPBase
          *
-         * Loads configuration file, initializes log file and Credentials 
+         * Loads configuration file, initializes log file and Credentials
          * object for use with iip credentials needed for authentication.
          *
          * @param configfilename Name of configuration file to read
@@ -62,7 +62,7 @@ class IIPBase {
          *
          * Log file directory can be set multiple ways and this method returns
          * the final file path of the log file. `$IIP_CONFIG_DIR` environment
-         * variable takes precendence over `LOGGING_DIR` (read from 
+         * variable takes precendence over `LOGGING_DIR` (read from
          * L1SystemCfg.yaml). If both of them are not set, log file will be
          * written to `/tmp`.
          *
@@ -72,15 +72,15 @@ class IIPBase {
 
         /**
          * Read configuration file
-         * 
-         * Load configuration file from `$IIP_CONFIG_DIR/{filename}` or 
+         *
+         * Load configuration file from `$IIP_CONFIG_DIR/{filename}` or
          * `$CTRL_IIP_DIR/{filename}`. `$IIP_CONFIG_DIR takes precedence over
          * `$CTRL_IIP_DIR`.
          *
          * @param config_filename Name of configuration file
          * @return Root node of the YAML configuration file
          *
-         * @throws No exception thrown but application will `exit` if 
+         * @throws No exception thrown but application will `exit` if
          *      requirements are not met
          */
         std::string load_config_file(const std::string& config_filename);
@@ -88,15 +88,15 @@ class IIPBase {
         /**
          * Construct AMQP URL to RabbitMQ Server
          *      Example. `amqp://{username}:{password}@{broker_url}`
-         * 
+         *
          * @param username RabbitMQ username
          * @param password RabbitMQ password
          * @param broker_url RabbitMQ hostname followed by vhost name
          *
          * @return RabbitMQ URL
          */
-        std::string get_amqp_url(const std::string& username, 
-                                 const std::string& password, 
+        std::string get_amqp_url(const std::string& username,
+                                 const std::string& password,
                                  const std::string& broker_url);
 
     protected:
