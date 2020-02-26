@@ -8,10 +8,10 @@ ExternalProject_Add(
     ${PROJECT_NAME}
     BUILD_IN_SOURCE 1
     URL "${Cfitsio_URL}"
+    PATCH_COMMAND cp FindPthreads.cmake Findpthreads.cmake
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
-        -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS}
+        -DUSE_PTHREADS=ON
 )
 ExternalProject_Get_property(${PROJECT_NAME} INSTALL_DIR)
 
