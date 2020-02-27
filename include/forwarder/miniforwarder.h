@@ -58,6 +58,18 @@ class miniforwarder : public IIPBase {
         void associated(const YAML::Node&);
 
         void assemble(const std::string&);
+        void format_with_header(std::vector<std::string>& ccds,
+                                const std::string header);
+        void publish_completed_msgs(const std::string image_id,
+                                    const std::string to,
+                                    std::vector<std::string>& ccds,
+                                    const std::string session_id,
+                                    const std::string job_num);
+        void cleanup(const std::string image_id,
+                     std::vector<std::string>& ccds,
+                     const std::string header);
+
+
         void publish_ack(const YAML::Node&);
         void publish_xfer_complete(
                 const std::string& obsid,
@@ -70,7 +82,7 @@ class miniforwarder : public IIPBase {
                 const std::string& filename,
                 const std::string& desc);
         boost::filesystem::path create_dir(const boost::filesystem::path&);
-        bool check_valid_board(const std::string& raft, const std::string& ccd);
+        bool check_valid_board(const std::vector<std::string>& locs);
         void register_fwd();
 
     private:
@@ -80,6 +92,7 @@ class miniforwarder : public IIPBase {
         std::string _telemetry_q;
         std::string _amqp_url;
         std::string _partition;
+        std::string _folder;
         std::string _association_key;
         std::string _forwarder_list;
         int _seconds_to_update;
@@ -92,14 +105,14 @@ class miniforwarder : public IIPBase {
         std::map<const std::string,
             std::function<void (const YAML::Node&)> > _actions;
         std::vector<std::string> _daq_locations;
+        std::vector<std::string> _hdr_mapping;
+        std::vector<std::string> _daq_mapping;
 
         std::unique_ptr<SimplePublisher> _pub;
         std::unique_ptr<Scoreboard> _db;
-        std::unique_ptr<DAQFetcher> _daq;
         std::unique_ptr<Watcher> _watcher;
         std::unique_ptr<Beacon> _beacon;
         std::unique_ptr<FileSender> _sender;
-        std::unique_ptr<FitsFormatter> _fmt;
 
         MessageBuilder _builder;
         HeaderFetcher _hdr;

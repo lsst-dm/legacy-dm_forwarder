@@ -23,12 +23,17 @@
 
 #include <sstream>
 #include <algorithm>
-#include "core/Exceptions.h"
-#include "core/SimpleLogger.h"
-#include "core/RedisConnection.h"
-#include "forwarder/Scoreboard.h"
+#include <core/Exceptions.h>
+#include <core/SimpleLogger.h>
+#include <core/RedisConnection.h>
+#include <forwarder/Scoreboard.h>
 
-int NUM_EVENTS = 2;
+const std::string TARGET = ":target";
+const std::string CCD = ":ccd";
+const std::string HEADER = ":header";
+const std::string SESSION_ID = ":session_id";
+const std::string JOB_NUM = ":job_num";
+const std::string LOCATIONS = ":locations";
 
 Scoreboard::Scoreboard(const std::string& host,
                        const int& port,
@@ -36,57 +41,96 @@ Scoreboard::Scoreboard(const std::string& host,
                        const std::string& password) {
     _con = std::unique_ptr<RedisConnection>(
             new RedisConnection(host, port, db_num));
+
+    _con->flushdb();
+    _con->exec();
 }
 
 Scoreboard::~Scoreboard() {
 
 }
 
-bool Scoreboard::is_ready(const std::string& image_id) {
-    auto list = _db[image_id];
-    if (list.size() == NUM_EVENTS) {
-        return true;
-    }
-    return false;
-}
+bool Scoreboard::ready(const std::string& image_id) {
+    _con->exists(image_id + CCD);
+    _con->exists(image_id + HEADER);
+    std::vector<Reply> replies = _con->exec();
 
-void Scoreboard::add(const std::string& image_id, const std::string& event) {
-    auto itr = _db.find(image_id);
-    std::set<std::string> events;
-    if (itr != _db.end()) {
-        events = _db[image_id];
+    bool flag = true;
+    for (auto&& r : replies) {
+        flag = flag && r.integer;
     }
-    events.insert(event);
-    _db[image_id] = events;
+    return flag;
 }
 
 void Scoreboard::remove(const std::string& image_id) {
-    auto itr = _db.find(image_id);
-    if (itr == _db.end()) {
-        std::ostringstream err;
-        err << "Cannot remove " << image_id << " because key not found";
-        LOG_CRT << err.str();
-        throw L1::KeyNotFound(err.str());
+    _con->keys(image_id + "*");
+    std::vector<Reply> results = _con->exec();
+
+    std::vector<std::string> keys;
+    for (auto&& val : results[0].elements) {
+        keys.push_back(val.str);
     }
-    _db.erase(image_id);
+    _con->del(keys);
+    _con->exec();
 }
 
 void Scoreboard::add_xfer(const std::string& image_id, const xfer_info& xfer) {
-    _xfer[image_id] = xfer;
+    _con->set(image_id + TARGET, xfer.target);
+    _con->set(image_id + SESSION_ID, xfer.session_id);
+    _con->set(image_id + JOB_NUM, xfer.job_num);
+    _con->lpush(image_id + LOCATIONS, xfer.locations);
+    _con->exec();
 }
 
 xfer_info Scoreboard::get_xfer(const std::string& image_id) {
-    auto itr = _xfer.find(image_id);
-    if (itr == _xfer.end()) {
-        std::ostringstream err;
-        err << "Cannot get transfer parameters for Image ID " << image_id 
-            << " because key not found";
-        LOG_CRT << err.str();
-        throw L1::KeyNotFound(err.str());
-    }
-    return _xfer[image_id];
+    _con->get(image_id + SESSION_ID);
+    _con->get(image_id + JOB_NUM);
+    _con->get(image_id + TARGET);
+    std::vector<Reply> r = _con->exec();
+
+    xfer_info info;
+    info.session_id = r[0].str;
+    info.job_num = r[1].str;
+    info.target = r[2].str;
+    info.locations = locations(image_id);
+    return info;
+}
+
+void Scoreboard::add_header(const std::string& image_id,
+                            const std::string& path) {
+    _con->set(image_id + HEADER, path);
+    _con->exec();
 }
 
 void Scoreboard::set_fwd(const std::string& key, const std::string& body) {
-    _con->lpush(key.c_str(), body);
+    _con->lpush(key, { body });
+    _con->exec();
+}
+
+std::vector<std::string> Scoreboard::locations(const std::string& image_id) {
+    _con->lrange(image_id + LOCATIONS, "0", "-1");
+    std::vector<Reply> reply = _con->exec();
+
+    std::vector<std::string> locations;
+    for (auto&& loc : reply[0].elements) {
+        locations.push_back(loc.str);
+    }
+    return locations;
+}
+
+std::string Scoreboard::header(const std::string& image_id) {
+    _con->get(image_id + HEADER);
+    std::vector<Reply> r = _con->exec();
+    return r[0].str;
+}
+
+std::vector<std::string> Scoreboard::ccds(const std::string& image_id) {
+    _con->lrange(image_id + CCD, "0", "-1");
+    std::vector<Reply> r = _con->exec();
+
+    std::vector<std::string> sensors;
+    for (auto&& ccd : r[0].elements) {
+        sensors.push_back(ccd.str);
+    }
+    return sensors;
 }

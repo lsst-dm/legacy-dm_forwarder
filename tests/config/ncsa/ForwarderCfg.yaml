@@ -38,9 +38,9 @@ ARCHIVE_QUEUE: archive_ctrl_consume
 TELEMETRY_QUEUE: telemetry_queue
 
 # redis database configuration for handling heartbeat and storing information
-REDIS_HOST: 141.142.238.15
+REDIS_HOST: localhost
 REDIS_PORT: 6379
-REDIS_DB: 14
+REDIS_DB: 1
 
 # timeout for forwarder to send keepalive to associated CSC
 SECONDS_TO_UPDATE: 3
@@ -53,5 +53,5 @@ SECONDS_TO_EXPIRE: 10
 # -f, forces the copy
 # -n, does not use DNS to resolve IP address
 # -s, number of streams to use
-XFER_OPTION: bbcp -f -n -s 1 -i ~/.ssh/id_rsa
-#XFER_OPTION: scp -i ~/.ssh/id_rsa
+#XFER_OPTION: bbcp -f -n -s 1 -i ~/.ssh/id_rsa
+XFER_OPTION: scp -i ~/.ssh/id_rsa

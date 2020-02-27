@@ -21,79 +21,83 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "core/SimpleLogger.h"
-#include "core/Exceptions.h"
-#include "core/RedisResponse.h"
+#include <functional>
+#include <memory>
+#include <core/Exceptions.h>
+#include <core/SimpleLogger.h>
+#include <core/RedisResponse.h>
 
-RedisResponse::RedisResponse(redisContext* c,
-                             const char* fmt,
-                             const char* value,
-                             size_t size) {
-    _reply = static_cast<redisReply*>(redisCommand(c, fmt, value, size));
-    if (is_err()) {
-        std::string err = "Cannot execute command because " +
-            std::string(_reply->str);
-        LOG_CRT << err;
-        throw L1::RedisError(err);
-    }
-}
+RedisResponse::RedisResponse(redisContext* context,
+                                         RedisArg arg){
+    _arg = arg;
+    _context = context;
 
-RedisResponse::RedisResponse(redisContext* c, const char* cmd) {
-    _reply = static_cast<redisReply*>(redisCommand(c, cmd));
-    if (is_err()) {
-        std::string err = "Cannot execute command because " +
-            std::string(_reply->str);
-        LOG_CRT << err;
-        throw L1::RedisError(err);
+    int len = arg.arg.size();
+    const char* argv[len];
+    size_t argvlen[len];
+
+    for (int i = 0; i < len; i++) {
+        argv[i] = arg.arg[i].c_str();
+        argvlen[i] = arg.arg[i].size();
     }
+
+    redisAppendCommandArgv(_context, len, argv, argvlen);
 }
 
 RedisResponse::~RedisResponse() {
-    freeReplyObject(_reply);
 }
 
-bool RedisResponse::is_err() {
-    if (_reply->type == REDIS_REPLY_ERROR) {
-        return true;
+Reply RedisResponse::get() {
+    std::unique_ptr<redisReply, std::function<void (redisReply*)>> r(
+            new redisReply(), [](redisReply* ptr) {
+                freeReplyObject(ptr);
+            });
+    redisReply* replyptr = r.get();
+    redisGetReply(_context, (void **)&replyptr);
+
+    if (_context == NULL || _context->err) {
+        std::ostringstream err;
+        err << "Error occurred while executing redis command because "
+            << _context->err;
+        LOG_CRT << err.str();
+        throw L1::RedisError(err.str());
     }
-    return false;
+
+    Reply g = reply(replyptr);
+    return g;
 }
 
-std::string RedisResponse::get_status() {
-    if (_reply->type != REDIS_REPLY_STATUS) {
-        LOG_CRT << _reply->str;
-        throw L1::RedisError(_reply->str);
-    }
-    return _reply->str;
-}
+Reply RedisResponse::reply(redisReply* r) {
+    Reply g;
+    g.integer = r->integer;
 
-std::string RedisResponse::get_str() {
-    if (_reply->type == REDIS_REPLY_NIL) {
-        std::string err = "Value for given key is nil";
-        LOG_CRT << err;
-        throw L1::RedisError(err);
-    }
-    return _reply->str;
-}
+    if (r->type == REDIS_REPLY_ERROR) {
+        std::ostringstream cmd;
+        for (auto&& item : _arg.arg) {
+            cmd << item << " ";
+        }
 
-long long RedisResponse::get_int() {
-    if (_reply->type != REDIS_REPLY_INTEGER) {
-        LOG_CRT << _reply->str;
-        throw L1::RedisError(_reply->str);
-    }
-    return _reply->integer;
-}
-
-const std::vector<std::string> RedisResponse::get_arr() {
-    if (_reply->type != REDIS_REPLY_ARRAY) {
-        LOG_CRT << _reply->str;
-        throw L1::RedisError(_reply->str);
+        std::ostringstream err;
+        err << "Error while executing redis `" << cmd.str() << "` because "
+            << r->str;
+        LOG_CRT << err.str();
+        throw L1::RedisError(err.str());
     }
 
-    std::size_t num = _reply->elements;
-    std::vector<std::string> v(num);
-    for (int i = 0; i < num; i++) {
-        v[i] = _reply->element[i]->str;
+    if (r->type == REDIS_REPLY_STRING || r->type == REDIS_REPLY_STATUS) {
+        g.str = std::string(r->str);
     }
-    return v;
+    else {
+        g.str = "";
+    }
+
+    if (r->type == REDIS_REPLY_ARRAY) {
+        std::vector<Reply> replies;
+        for (int i = 0; i < r->elements; i++) {
+            replies.push_back(reply(r->element[i]));
+        }
+        g.elements = replies;
+    }
+
+    return g;
 }

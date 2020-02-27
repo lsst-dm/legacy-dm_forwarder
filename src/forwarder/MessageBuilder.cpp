@@ -22,7 +22,7 @@
  */
 
 #include <yaml-cpp/yaml.h>
-#include "forwarder/MessageBuilder.h"
+#include <forwarder/MessageBuilder.h>
 
 std::string MessageBuilder::build_ack(const std::string& msg_type,
                                       const std::string& component,
@@ -36,7 +36,7 @@ std::string MessageBuilder::build_ack(const std::string& msg_type,
     msg << YAML::Key << "COMPONENT" << YAML::Value << component;
     msg << YAML::Key << "ACK_ID" << YAML::Value << ack_id;
     msg << YAML::EndMap;
-    return std::string(msg.c_str());
+    return msg.c_str();
 }
 
 std::string MessageBuilder::build_xfer_complete(const std::string& filename,
@@ -55,7 +55,7 @@ std::string MessageBuilder::build_xfer_complete(const std::string& filename,
     msg << YAML::Key << "JOB_NUM" << YAML::Value << job_num;
     msg << YAML::Key << "REPLY_QUEUE" << YAML::Value << reply_q;
     msg << YAML::EndMap;
-    return std::string(msg.c_str());
+    return msg.c_str();
 }
 
 std::string MessageBuilder::build_associated_ack(const std::string& key,
@@ -68,7 +68,7 @@ std::string MessageBuilder::build_associated_ack(const std::string& key,
     msg << YAML::Key << "ASSOCIATION_KEY" << YAML::Value << key;
     msg << YAML::Key << "ACK_ID" << YAML::Value << ack_id;
     msg << YAML::EndMap;
-    return std::string(msg.c_str());
+    return msg.c_str();
 }
 
 std::string MessageBuilder::build_fwd_info(const std::string& hostname,
@@ -82,7 +82,7 @@ std::string MessageBuilder::build_fwd_info(const std::string& hostname,
     msg << YAML::Key << "ip_address" << YAML::Value << ip_addr;
     msg << YAML::Key << "consume_queue" << YAML::Value << consume_q;
     msg << YAML::EndMap;
-    return std::string(msg.c_str());
+    return msg.c_str();
 }
 
 std::string MessageBuilder::build_image_retrieval_for_archiving(
@@ -101,5 +101,5 @@ std::string MessageBuilder::build_image_retrieval_for_archiving(
     msg << YAML::Key << "STATUS_CODE" << YAML::Value << code;
     msg << YAML::Key << "DESCRIPTION" << YAML::Value << desc;
     msg << YAML::EndMap;
-    return std::string(msg.c_str());
+    return msg.c_str();
 }

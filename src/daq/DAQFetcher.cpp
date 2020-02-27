@@ -22,6 +22,7 @@
  */
 
 #include <sstream>
+#include <future>
 #include <ims/Image.hh>
 #include <daq/ScienceSet.hh>
 #include <daq/WavefrontSet.hh>
@@ -110,7 +111,7 @@ void DAQFetcher::fetch(const fs::path& prefix,
     fs::path filename = prefix / fs::path(image + "-R" + new_location);
 
     try {
-        _fmt.write(ccds, naxes, filename.string());
+        _fmt.write(image, ccds, naxes, filename.string());
     }
     catch (L1::CannotFormatFitsfile& e) {
         throw L1::CannotFetchPixel(e.what());

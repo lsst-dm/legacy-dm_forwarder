@@ -32,22 +32,34 @@ FileSender::FileSender(const std::string& xfer_option) {
     _xfer_option = xfer_option;
 }
 
-void FileSender::send(const fs::path& from, const fs::path& to) {
+void FileSender::send(std::vector<std::string>& from, const fs::path& to) {
+    std::ostringstream files;
+    files << "{";
+    for (int i = 0; i < from.size(); i++) {
+        if (i == from.size()-1) {
+            files << from[i];
+        }
+        else {
+            files << from[i] << ",";
+        }
+    }
+    files << "}";
+
     std::ostringstream bbcp;
     bbcp << _xfer_option
          << " "
-         << from.string()
+         << files.str()
          << " "
          << to.string();
 
     int status = system(bbcp.str().c_str());
     if (status) {
         std::ostringstream err;
-        err << "Cannot copy file from " << from.string()
+        err << "Cannot copy file from " << files.str()
             << "to" << to.string();
         LOG_CRT << err.str();
         throw L1::CannotCopyFile(err.str());
     }
 
-    LOG_INF << "Sent file from " << from.string() << " to " << to.string();
+    LOG_INF << "Sent file from " << files.str() << " to " << to.string();
 }

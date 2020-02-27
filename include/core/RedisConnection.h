@@ -25,10 +25,10 @@
 #define REDIS_CONNECTION_H
 
 #include <vector>
-#include "hiredis/hiredis.h"
-#include "core/RedisResponse.h"
-#include "core/SimpleLogger.h"
-#include "core/Exceptions.h"
+#include <hiredis/hiredis.h>
+#include <core/SimpleLogger.h>
+#include <core/Exceptions.h>
+#include <core/RedisResponse.h>
 
 /**
  * Wrapper class for creating a redis connection
@@ -39,23 +39,35 @@
  *
  * Note: redisContext is not thread-safe.
  */
+
 class RedisConnection {
     public:
-        RedisConnection(const std::string& host,
-                        const int& port,
-                        const int& db);
+        RedisConnection(const std::string host,
+                        const int port,
+                        const int db);
         ~RedisConnection();
-
-        void select(int db);
-        void lpush(const char* key, const std::string& v);
-        void setex(const std::string& key,
-                   const int& timeout,
-                   const std::string& value);
-        bool exists(const std::string& key);
+        void select(const std::string index);
+        void lpush(const std::string key,
+                   std::vector<std::string> values);
+        void setex(const std::string key,
+                   const std::string seconds,
+                   const std::string value);
+        void exists(const std::string key);
+        void set(const std::string key,
+                 const std::string value);
+        void get(const std::string key);
+        void lrange(const std::string key,
+                    const std::string start,
+                    const std::string stop);
+        void flushdb();
+        void keys(const std::string pattern);
+        void del(std::vector<std::string> keys);
+        std::vector<Reply> exec();
 
     private:
         std::string _host;
         redisContext* _context;
+        std::vector<RedisArg> _commands;
 };
 
 #endif

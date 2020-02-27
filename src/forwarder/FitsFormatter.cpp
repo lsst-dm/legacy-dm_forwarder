@@ -45,6 +45,7 @@ FitsFormatter::FitsFormatter(const std::vector<std::string>& daq_mapping,
 
 void FitsFormatter::write_header(const fs::path& pix_path,
                                  const fs::path& header_path) {
+
     try {
         int status = 0;
         FitsOpener pix_file(pix_path, READWRITE);
@@ -89,7 +90,8 @@ void FitsFormatter::write_header(const fs::path& pix_path,
             LOG_CRT << err;
             throw L1::CannotFormatFitsfile(std::string(err));
         }
-        LOG_INF << "Finished assembling header with pixel data file.";
+        LOG_INF << "Finished assembling header with pixel data file at "
+                << pix_path.string();
     }
     catch (L1::CfitsioError& e) {
         throw L1::CannotFormatFitsfile(e.what());

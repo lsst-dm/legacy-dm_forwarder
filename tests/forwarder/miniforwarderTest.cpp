@@ -26,13 +26,14 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+#include <functional>
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 #include <yaml-cpp/yaml.h>
-
-#include "core/IIPBase.h"
-#include "core/Exceptions.h"
-#include "forwarder/miniforwarder.h"
+#include <core/IIPBase.h>
+#include <core/Exceptions.h>
+#include <core/Consumer.h>
+#include <forwarder/miniforwarder.h>
 
 namespace fs = boost::filesystem;
 
@@ -40,21 +41,33 @@ struct miniforwarderFixture : IIPBase {
 
     std::unique_ptr<miniforwarder> _fwd;
     YAML::Node _d;
-    std::string _log_dir;
+    std::string _log_dir, _amqp_url, _telemetry_q;
 
     miniforwarderFixture() : IIPBase("ForwarderCfg.yaml", "test"){
         BOOST_TEST_MESSAGE("Setup miniforwarder fixture");
+
+        std::string user = _credentials->get_user("service_user");
+        std::string passwd = _credentials->get_user("service_passwd");
+        std::string ip_host = _config_root["BASE_BROKER_ADDR"]
+                .as<std::string>();
+
+        _amqp_url = "amqp://" + user + ":" + passwd + "@" + ip_host;
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
+        _telemetry_q = _config_root["TELEMETRY_QUEUE"].as<std::string>();
 
         _fwd = std::unique_ptr<miniforwarder>(
                 new miniforwarder("ForwarderCfg.yaml", "test"));
+    }
 
-        const char* env = getenv("IIP_TEST_DATA_DIR");
-        if (env == NULL) {
-            BOOST_FAIL("IIP_TEST_DATA_DIR env variable is not set");
-        }
+    void on_message(const std::string& message) {
 
-        _d = YAML::LoadFile(std::string(env) + "/test_data.yaml");
+    }
+
+    void run_consumer(const std::string queue) {
+        Consumer c(_amqp_url, queue);
+        auto on_msg = std::bind(&miniforwarderFixture::on_message, this,
+                std::placeholders::_1);
+        c.run(on_msg);
     }
 
     YAML::Node build_xfer_params(std::string& image_id,
@@ -99,6 +112,26 @@ struct miniforwarderFixture : IIPBase {
 };
 
 BOOST_FIXTURE_TEST_SUITE(miniforwarderTest, miniforwarderFixture);
+
+BOOST_AUTO_TEST_CASE(on_message) {
+
+}
+
+BOOST_AUTO_TEST_CASE(run) {
+
+}
+
+BOOST_AUTO_TEST_CASE(health_check) {
+
+}
+
+BOOST_AUTO_TEST_CASE(xfer_params) {
+
+}
+
+BOOST_AUTO_TEST_CASE(header_ready) {
+
+}
 
 BOOST_AUTO_TEST_CASE(end_readout) {
     std::string image_id = _d["IMAGE_ID"].as<std::string>();
@@ -167,10 +200,37 @@ BOOST_AUTO_TEST_CASE(end_readout) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(check_valid_board) {
-    BOOST_CHECK_EQUAL(_fwd->check_valid_board("00", "00"), true);
-    BOOST_CHECK_EQUAL(_fwd->check_valid_board("00", "11"), false);
-    BOOST_CHECK_EQUAL(_fwd->check_valid_board("1111", "00"), false);
+
+BOOST_AUTO_TEST_CASE(process_ack) {
+
+}
+
+BOOST_AUTO_TEST_CASE(associated) {
+
+}
+
+BOOST_AUTO_TEST_CASE(assemble) {
+
+}
+
+BOOST_AUTO_TEST_CASE(format_with_header) {
+
+}
+
+BOOST_AUTO_TEST_CASE(publish_completed_msgs) {
+
+}
+
+BOOST_AUTO_TEST_CASE(cleanup) {
+
+}
+
+BOOST_AUTO_TEST_CASE(publish_ack) {
+
+}
+
+BOOST_AUTO_TEST_CASE(publish_xfer_complete) {
+
 }
 
 BOOST_AUTO_TEST_CASE(publish_image_retrieval_for_archiving) {
@@ -186,6 +246,32 @@ BOOST_AUTO_TEST_CASE(publish_image_retrieval_for_archiving) {
                 "",
                 "hello world")
     );
+}
+
+BOOST_AUTO_TEST_CASE(create_dir) {
+    BOOST_CHECK_NO_THROW(_fwd->create_dir(fs::path("/tmp/fwd_test")));
+    fs::remove(fs::path("/tmp/fwd_test"));
+
+    BOOST_CHECK_THROW(_fwd->create_dir(fs::path("/opt/fwd_test")),
+            L1::CannotCreateDir);
+}
+
+BOOST_AUTO_TEST_CASE(check_valid_board) {
+    // valid
+    std::vector<std::string> good { "22/1", "22/2", "22/0" };
+    BOOST_CHECK_EQUAL(_fwd->check_valid_board(good), true);
+
+    // bad
+    std::vector<std::string> bad { "00/0" };
+    BOOST_CHECK_EQUAL(_fwd->check_valid_board(bad), false);
+
+    // bad2
+    std::vector<std::string> bad2 { "22/0", "99" };
+    BOOST_CHECK_EQUAL(_fwd->check_valid_board(bad2), false);
+}
+
+BOOST_AUTO_TEST_CASE(register_fwd) {
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()
