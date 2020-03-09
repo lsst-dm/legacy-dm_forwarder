@@ -60,7 +60,6 @@ struct DAQFetcherFixture : IIPBase {
         _daq = std::unique_ptr<DAQFetcher>(new DAQFetcher(partition, folder,
                 daq_mapping, hdr_mapping));
 
-
         BOOST_TEST_REQUIRE(ut::framework::master_test_suite().argc == 3);
         BOOST_TEST(ut::framework::master_test_suite().argv[1] == "--data");
         std::string path(ut::framework::master_test_suite().argv[2]);

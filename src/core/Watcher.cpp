@@ -21,6 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include <thread>
 #include <chrono>
 #include "core/HeartBeat.h"
@@ -56,7 +57,10 @@ void Watcher::check(const heartbeat_params params) {
         RedisConnection redis(host, port, db);
         LOG_INF << "Watcher started";
         while (!_stop.load()) {
-            bool exists = redis.exists(key);
+            redis.exists(key);
+            std::vector<Reply> reply = redis.exec();
+            bool exists = reply[0].integer;
+
             if (!exists) {
                 LOG_CRT << "Did not receive heartbeat from Commandable SAL"
                     << " Component(CSC)";

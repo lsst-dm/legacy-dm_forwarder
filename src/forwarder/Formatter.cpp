@@ -25,11 +25,10 @@
 #include <unordered_set>
 #include <algorithm>
 #include <future>
-#include "core/SimpleLogger.h"
-#include "core/Exceptions.h"
-#include "forwarder/Formatter.h"
-#include "forwarder/PixelArray.h"
-
+#include <core/SimpleLogger.h>
+#include <core/Exceptions.h>
+#include <forwarder/Formatter.h>
+#include <core/RedisConnection.h>
 
 namespace fs = boost::filesystem;
 
@@ -37,6 +36,9 @@ Formatter::Formatter(const std::vector<std::string>& daq_mapping,
                      const std::vector<std::string>& hdr_mapping) :
         _daq_mapping{daq_mapping},
         _hdr_mapping{hdr_mapping} {
+
+    _db = std::unique_ptr<RedisConnection>(
+            new RedisConnection("localhost", 6379, 0));
 
     if (hdr_mapping.size() != daq_mapping.size()) {
         std::ostringstream err;
@@ -47,7 +49,7 @@ Formatter::Formatter(const std::vector<std::string>& daq_mapping,
     }
 }
 
-void Formatter::write_pix_file(int32_t** ccd,
+std::string Formatter::write_pix_file(int32_t** ccd,
                                int32_t& len,
                                long* naxes,
                                const fs::path& filepath) {
@@ -73,7 +75,9 @@ void Formatter::write_pix_file(int32_t** ccd,
             LOG_CRT << std::string(err);
             throw L1::CannotFormatFitsfile(err);
         }
-        LOG_INF << "Finished writing pixel fits file at " << filepath.string();
+        LOG_INF << "Finished writing pixel fitsfile at " << filepath.string();
+
+        return filepath.string();
     }
     catch (L1::CfitsioError& e) {
         throw L1::CannotFormatFitsfile(e.what());
@@ -83,22 +87,24 @@ void Formatter::write_pix_file(int32_t** ccd,
 int Formatter::get_daq_segment_idx(const std::string segment) {
     auto iter = std::find(_daq_mapping.begin(), _daq_mapping.end(), segment);
     if (iter == _daq_mapping.end()) {
-        std::string err = "Cannot find segment number " + segment
-             + " inside DAQ Readout Pattern.";
-        LOG_CRT << err;
-        throw L1::CannotFormatFitsfile(err);
+        std::ostringstream err;
+        err << "Cannot find segment number " << segment
+            << " inside DAQ Readout Pattern.";
+        LOG_CRT << err.str();
+        throw L1::CannotFormatFitsfile(err.str());
     }
 
     int idx = std::distance(_daq_mapping.begin(), iter);
     return idx;
 }
 
-void Formatter::write(Pixel3d& ccds,
+void Formatter::write(const std::string image,
+                      Pixel3d& ccds,
                       long* naxes,
                       const fs::path& prefix) {
     int32_t d3 = static_cast<int32_t>(ccds.d3());
     int32_t*** pix = ccds.get();
-    std::vector<std::future<void>> tasks;
+    std::vector<std::future<std::string>> tasks;
 
     for (int i = 0; i < ccds.d1(); i++) {
         int32_t** ccd = pix[i];
@@ -108,7 +114,7 @@ void Formatter::write(Pixel3d& ccds,
 
         fs::path filename(osname.str());
 
-        std::future<void> job = std::async(
+        std::future<std::string> job = std::async(
                 std::launch::async,
                 &Formatter::write_pix_file,
                 this,
@@ -119,7 +125,10 @@ void Formatter::write(Pixel3d& ccds,
         tasks.push_back(std::move(job));
     }
 
-    for (auto&& x : tasks) {
-        x.get();
+    for (auto&& task : tasks) {
+        std::string filename = task.get();
+        std::string key = image + ":ccd";
+        _db->lpush(key, { filename });
+        _db->exec();
     }
 }

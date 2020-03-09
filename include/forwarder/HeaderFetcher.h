@@ -24,15 +24,16 @@
 #ifndef HEADERFETCHER_H
 #define HEADERFETCHER_H
 
-#include <boost/filesystem.hpp>
-#include <curl/curl.h>
 #include <stdio.h>
+#include <curl/curl.h>
+#include <boost/filesystem.hpp>
 
 class HeaderFetcher {
     public:
         HeaderFetcher();
         ~HeaderFetcher();
-        void fetch(const std::string&, const boost::filesystem::path&);
+        void fetch(const std::string& url,
+                   const boost::filesystem::path& dest);
 
     private:
         CURL* handle;

@@ -24,12 +24,13 @@
 #ifndef FILESENDER_H
 #define FILESENDER_H
 
+#include <vector>
 #include <boost/filesystem.hpp>
 
 class FileSender {
     public:
         FileSender(const std::string& xfer_option);
-        void send(const boost::filesystem::path& from,
+        void send(std::vector<std::string>& from,
                   const boost::filesystem::path& to);
 
     private:

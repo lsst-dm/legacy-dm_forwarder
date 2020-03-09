@@ -21,9 +21,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "core/Exceptions.h"
-#include "core/SimpleLogger.h"
-#include "forwarder/HeaderFetcher.h"
+#include <core/Exceptions.h>
+#include <core/SimpleLogger.h>
+#include <forwarder/HeaderFetcher.h>
 
 namespace fs = boost::filesystem;
 
@@ -47,7 +47,8 @@ HeaderFetcher::HeaderFetcher() {
  * @param url HTTP url for the header file
  * @param destination target location for written header file
  */
-void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) {
+void HeaderFetcher::fetch(const std::string& url,
+                          const fs::path& destination) {
     try {
         // set error message array to 0
         char error_buffer[CURL_ERROR_SIZE];
@@ -68,11 +69,13 @@ void HeaderFetcher::fetch(const std::string& url, const fs::path& destination) {
         CURLcode status = curl_easy_perform(handle);
         if (status != CURLE_OK) {
             fp.set_remove();
-            std::string err = "Cannot pull header file from " + url + " because " + \
-                          std::string(error_buffer);
-            LOG_CRT << err;
-            throw L1::CannotFetchHeader(err);
+            std::ostringstream err;
+            err << "Cannot pull header file from " << url << " because "
+                << std::string(error_buffer);
+            LOG_CRT << err.str();
+            throw L1::CannotFetchHeader(err.str());
         }
+
         LOG_INF << "Fetched header file from " << url;
     }
     catch (L1::CannotOpenFile& e) {

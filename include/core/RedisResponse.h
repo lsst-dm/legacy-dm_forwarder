@@ -21,30 +21,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef REDIS_RESPONSE_H
-#define REDIS_RESPONSE_H
+#ifndef REDISRESPONSE_H
+#define REDISRESPONSE_H
 
-#include "hiredis/hiredis.h"
-#include "core/SimpleLogger.h"
-#include "core/Exceptions.h"
+#include <string>
+#include <vector>
+#include <hiredis/hiredis.h>
+
+struct Reply {
+    long long integer;
+    std::string str;
+    std::vector<Reply> elements;
+};
+
+struct RedisArg {
+    std::vector<std::string> arg;
+};
 
 class RedisResponse {
     public:
-        RedisResponse(redisContext* c,
-                      const char* fmt,
-                      const char* value,
-                      size_t size);
-        RedisResponse(redisContext* c, const char* cmd);
+        RedisResponse(redisContext* context,
+                      RedisArg arg);
         ~RedisResponse();
-
-        bool is_err();
-        std::string get_status();
-        std::string get_str();
-        long long get_int();
-        const std::vector<std::string> get_arr();
+        Reply get();
+        Reply reply(redisReply* r);
 
     private:
-        redisReply* _reply;
+        redisContext* _context;
+        RedisArg _arg;
 };
 
 #endif

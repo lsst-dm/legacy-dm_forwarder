@@ -24,25 +24,28 @@
 #ifndef FORMATTER_H
 #define FORMATTER_H
 
+#include <memory>
 #include <fitsio.h>
 #include <boost/filesystem.hpp>
 #include <daq/Pixel3d.h>
-
+#include <core/RedisConnection.h>
 
 class Formatter {
     public:
         Formatter(const std::vector<std::string>& daq_mapping,
                   const std::vector<std::string>& hdr_mapping);
-        void write_pix_file(int32_t**,
-                            int32_t&,
-                            long*,
-                            const boost::filesystem::path&);
+        std::string write_pix_file(int32_t**,
+                                   int32_t&,
+                                   long*,
+                                   const boost::filesystem::path&);
         int get_daq_segment_idx(const std::string segment);
-        void write(Pixel3d& ccds,
+        void write(const std::string image,
+                   Pixel3d& ccds,
                    long* naxes,
                    const boost::filesystem::path& prefix);
 
     protected:
+        std::unique_ptr<RedisConnection> _db;
         std::vector<std::string> _daq_mapping;
         std::vector<std::string> _hdr_mapping;
 };

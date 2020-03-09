@@ -23,10 +23,10 @@
 
 #include <thread>
 #include <chrono>
-#include "core/HeartBeat.h"
-#include "core/RedisConnection.h"
-#include "core/SimpleLogger.h"
-#include "core/Exceptions.h"
+#include <core/HeartBeat.h>
+#include <core/RedisConnection.h>
+#include <core/SimpleLogger.h>
+#include <core/Exceptions.h>
 
 Beacon::Beacon(const heartbeat_params params) {
     _stop = false;
@@ -53,8 +53,8 @@ void Beacon::ping(const heartbeat_params& params) {
         RedisConnection redis(host, port, db);
         LOG_INF << "Beacon started ...";
         while (!_stop.load()) {
-            redis.setex(key, seconds_to_expire, "pong");
-
+            redis.setex(key, std::to_string(seconds_to_expire), "pong");
+            redis.exec();
             std::unique_lock<std::mutex> lk(_mutex);
             std::cv_status status = _cond.wait_for(lk,
                     std::chrono::seconds(seconds_to_update));

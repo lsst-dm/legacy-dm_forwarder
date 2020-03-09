@@ -22,14 +22,14 @@
  */
 
 #include <sys/time.h>
-#include "core/RedisConnection.h"
-#include "core/RedisResponse.h"
-#include "core/SimpleLogger.h"
-#include "core/Exceptions.h"
+#include <core/SimpleLogger.h>
+#include <core/Exceptions.h>
+#include <core/RedisResponse.h>
+#include <core/RedisConnection.h>
 
-RedisConnection::RedisConnection(const std::string& host,
-                                 const int& port,
-                                 const int& db) : _host(host) {
+RedisConnection::RedisConnection(const std::string host,
+                                 const int port,
+                                 const int db) : _host(host) {
     // Timeout of 2 seconds for connection handshake
     const struct timeval tv{2, 0};
 
@@ -39,40 +39,105 @@ RedisConnection::RedisConnection(const std::string& host,
         throw L1::RedisError(_context->errstr);
     }
 
-    select(db);
+    select(std::to_string(db));
+    exec();
+    LOG_INF << "Made connection to redis " << host << " using db " << db;
 }
 
 RedisConnection::~RedisConnection() {
     redisFree(_context);
 }
 
-void RedisConnection::select(int db) {
-    std::ostringstream fmt;
-    fmt << "select %b";
-    std::string str_db = std::to_string(db);
-    RedisResponse response(_context, fmt.str().c_str(), str_db.c_str(),
-            (size_t)str_db.size());
-    std::string ok = response.get_status();
+void RedisConnection::select(const std::string index) {
+    std::vector<std::string> v{ "select", index };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
 }
 
-void RedisConnection::lpush(const char* key, const std::string& value) {
-    std::ostringstream fmt;
-    fmt << "lpush " << key << " %b";
-    RedisResponse r(_context, fmt.str().c_str(), value.c_str(),
-            (size_t)value.size());
+void RedisConnection::lpush(const std::string key,
+                            std::vector<std::string> values) {
+    std::vector<std::string> v{ "lpush", key };
+    std::copy(values.begin(), values.end(), std::back_inserter(v));
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
 }
 
-void RedisConnection::setex(const std::string& key,
-                            const int& timeout,
-                            const std::string& value) {
-    std::ostringstream f;
-    f << "setex " << key << " " << timeout << " " << value;
-    RedisResponse r(_context, f.str().c_str());
+void RedisConnection::lrange(const std::string key,
+                             const std::string start,
+                             const std::string stop) {
+    std::vector<std::string> v{ "lrange", key, start, stop };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
 }
 
-bool RedisConnection::exists(const std::string& key) {
-    std::ostringstream f;
-    f << "exists " << key;
-    RedisResponse r(_context, f.str().c_str());
-    return r.get_int();
+void RedisConnection::setex(const std::string key,
+                            const std::string seconds,
+                            const std::string value) {
+    std::vector<std::string> v{ "setex", key, seconds, value };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+void RedisConnection::exists(const std::string key) {
+    std::vector<std::string> v{ "exists", key };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+void RedisConnection::set(const std::string key,
+                          const std::string value) {
+    std::vector<std::string> v{ "set", key, value };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+void RedisConnection::get(const std::string key) {
+    std::vector<std::string> v{ "get", key };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+void RedisConnection::flushdb() {
+    std::vector<std::string> v{ "flushdb" };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+void RedisConnection::keys(const std::string pattern) {
+    std::vector<std::string> v{ "keys", pattern };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+void RedisConnection::del(std::vector<std::string> keys) {
+    std::vector<std::string> v{ "del" };
+    std::copy(keys.begin(), keys.end(), std::back_inserter(v));
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+}
+
+std::vector<Reply> RedisConnection::exec() {
+    std::vector<Reply> replies;
+    std::vector<RedisResponse> responses;
+    for (auto&& arg : _commands) {
+        RedisResponse r(_context, arg);
+        responses.push_back(r);
+    }
+
+    for (auto&& res : responses) {
+        replies.push_back(res.get());
+    }
+
+    _commands.clear();
+    return replies;
 }

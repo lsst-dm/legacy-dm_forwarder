@@ -24,10 +24,8 @@
 #ifndef SCOREBOARD_H
 #define SCOREBOARD_H
 
-#include <map>
-#include <set>
 #include <memory>
-#include "core/RedisConnection.h"
+#include <core/RedisConnection.h>
 
 /**
  * Information used for readout transfer of fits file
@@ -42,8 +40,7 @@ struct xfer_info {
     std::string target;
     std::string session_id;
     std::string job_num;
-    std::string raft;
-    std::vector<std::string> ccds;
+    std::vector<std::string> locations;
 };
 
 /**
@@ -72,10 +69,10 @@ class Scoreboard {
         /**
          * Check if Image ID is ready to be assembled
          *
-         * @param image_id Image ID
+         * @param image Image ID
          * @return true if Image ID is ready to be assembled
          */
-        bool is_ready(const std::string& image_id);
+        bool ready(const std::string& image_id);
 
         /**
          * Add Image ID with Event name to keep track
@@ -102,6 +99,11 @@ class Scoreboard {
          * @param xfer Transfer information
          */
         void add_xfer(const std::string&, const xfer_info&);
+        void add_header(const std::string& image_id,
+                        const std::string& path);
+        std::vector<std::string> locations(const std::string& image_id);
+        std::string header(const std::string& image_id);
+        std::vector<std::string> ccds(const std::string& image_id);
 
         /**
          * Get transfer information
@@ -118,12 +120,6 @@ class Scoreboard {
     private:
         // RedisConnection
         std::unique_ptr<RedisConnection> _con;
-
-        // map to store image id against events
-        std::map<std::string, std::set<std::string>> _db;
-
-        // map to store image id for transfer information
-        std::map<std::string, xfer_info> _xfer;
 };
 
 #endif

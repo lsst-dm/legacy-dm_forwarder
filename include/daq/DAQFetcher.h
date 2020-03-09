@@ -24,6 +24,7 @@
 #ifndef DAQFETCHER_H
 #define DAQFETCHER_H
 
+#include <vector>
 #include <boost/filesystem.hpp>
 #include <daq/Sensor.hh>
 #include <daq/Location.hh>

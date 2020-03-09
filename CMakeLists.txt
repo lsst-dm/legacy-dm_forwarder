@@ -13,6 +13,7 @@ enable_testing()
 option(RMQC "Build rabbitmq-c rpms" OFF)
 option(RPMS "Build rpms" OFF)
 option(DAQv4 "Build with daq version 4.x" ON)
+option(TEST "Build tests" OFF)
 
 # set DAQ
 if (DAQv4)
@@ -118,7 +119,9 @@ else()
     add_subdirectory("./src/core")
     add_subdirectory(${Daq_SRC_DIR})
     add_subdirectory("./src/forwarder")
-    add_subdirectory("./tests")
+    if(TEST)
+        add_subdirectory("./tests")
+    endif()
 endif()
 
 # Cpack Specs

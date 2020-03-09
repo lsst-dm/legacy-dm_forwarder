@@ -3,12 +3,11 @@ project (lsst_iip_tests)
 
 # Build forwarder objects
 set(OBJ
-    "RabbitConnectionTest.cpp"
-    "RedisConnectionTest.cpp"
-    "ReadoutPatternTest.cpp"
-    "miniforwarderTest.cpp"
+    "./core/RabbitConnectionTest.cpp"
+    "./core/RedisConnectionTest.cpp"
     "./daq/DAQFetcherTest.cpp"
     "./daq/DataTest.cpp"
+    "./forwarder/miniforwarderTest.cpp"
 )
 
 add_library(lsst_iip_tests SHARED ${OBJ})
@@ -31,8 +30,8 @@ target_include_directories(test_exe PRIVATE
 )
 target_link_libraries(test_exe PRIVATE
     lsst_iip_tests
-    lsst_dm_forwarder
     lsst_dm_forwarder_daq
+    lsst_dm_forwarder
     lsst_iip_core
     ${daq_ims}
     ${daq_xds}
