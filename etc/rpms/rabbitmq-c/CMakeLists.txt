@@ -1,32 +1,28 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(SimpleAmqpClient VERSION ${SimpleAmqpClient_VERSION})
+project(rabbitmq-c VERSION ${Rabbitmq-C_VERSION})
 
 include(ExternalProject)
 
 ExternalProject_Add(
     ${PROJECT_NAME}
     BUILD_IN_SOURCE 1
-    URL "${SimpleAmqpClient_URL}"
+    URL "${Rabbitmq-C_URL}"
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
-        -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS}
-        -DRabbitmqc_LIBRARY=/usr/lib/librabbitmq.so
-        -DRabbitmqc_INCLUDE_DIR=/usr/include
 )
 ExternalProject_Get_property(${PROJECT_NAME} INSTALL_DIR)
 
 install(
     DIRECTORY ${INSTALL_DIR}/include/
     DESTINATION include
-    COMPONENT SimpleAmqpClient
+    COMPONENT rabbitmq-c
     USE_SOURCE_PERMISSIONS
 )
 
 install(
-    DIRECTORY ${INSTALL_DIR}/lib/
+    DIRECTORY ${INSTALL_DIR}/lib64/
     DESTINATION lib
-    COMPONENT SimpleAmqpClient
+    COMPONENT rabbitmq-c
     USE_SOURCE_PERMISSIONS
 )

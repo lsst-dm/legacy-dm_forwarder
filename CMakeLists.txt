@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.6)
+
+# get current running tag from git
+execute_process(
+    COMMAND bash "-c" "git describe --tags | sed -z -e s/-/_/g | tr -d '\n'"
+    OUTPUT_VARIABLE GIT_VERSION
+    ERROR_QUIET
+)
+
 project(dm_forwarder VERSION 1.0.0)
 enable_testing()
 
+option(RMQC "Build rabbitmq-c rpms" OFF)
 option(RPMS "Build rpms" OFF)
 option(DAQv4 "Build with daq version 4.x" ON)
-
 
 # set DAQ
 if (DAQv4)
@@ -24,7 +32,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-
 set(LSST_REPO "http://lsst-web.ncsa.illinois.edu/~hwin16/packages")
 set(LSST_INSTALL_DIR "/opt/lsst")
 
@@ -37,12 +44,17 @@ set(Boost_INCLUDE_DIRS /usr/include/boost169)
 set(Boost_LIBRARY_DIRS /usr/lib64/boost169)
 
 # Daq rpm variables
-set(Daq_VERSION 2.2.7)
-set(Daq_URL "${LSST_REPO}/daq/R2-V2.7.tgz")
+set(Daq_VERSION 4.2.3)
+set(Daq_URL "${LSST_REPO}/daq/R4-V2.3.tgz")
 set(Daq_DIR "/srv/nfs/lsst-daq/daq-sdk/current")
 set(Daq_RPM_DIR "/opt/lsst/daq")
 set(Daq_INCLUDE_DIRS ${Daq_DIR}/include)
 set(Daq_LIBRARY_DIRS ${Daq_DIR}/x86/lib)
+
+# rabbitmq-c
+set(Rabbitmq-C_VERSION 0.10.0)
+set(Rabbitmq-C_URL
+    "${LSST_REPO}/rabbitmq-c/v0.10.0.tar.gz")
 
 # SimpleAmqpClient rpm variables
 set(SimpleAmqpClient_VERSION 2.4.0)
@@ -50,7 +62,7 @@ set(SimpleAmqpClient_URL
     "${LSST_REPO}/SimpleAmqpClient/SimpleAmqpClient-2.4.0.tar.gz")
 
 # yaml-cpp rpm variables
-set(Yaml-cpp_VERSION 2.2.7)
+set(Yaml-cpp_VERSION 0.6.3)
 set(Yaml-cpp_URL "${LSST_REPO}/yaml-cpp/yaml-cpp-0.6.3.tar.gz")
 
 # cfitsio rpm variables
@@ -91,8 +103,12 @@ foreach(x ${boost_libs})
     )
 endforeach()
 
-if (RPMS)
-    set(FWD_COMPONENTS "daq" "SimpleAmqpClient" "yaml-cpp" "cfitsio")
+if (RMQC) 
+    set(FWD_COMPONENTS "rabbitmq-c")
+    add_subdirectory("./etc/rpms/rabbitmq-c")
+elseif (RPMS)
+    set(FWD_COMPONENTS 
+        "daq" "SimpleAmqpClient" "yaml-cpp" "cfitsio")
     add_subdirectory("./etc/rpms/daq")
     add_subdirectory("./etc/rpms/SimpleAmqpClient")
     add_subdirectory("./etc/rpms/yaml-cpp")
@@ -111,32 +127,44 @@ set(CPACK_COMPONENTS_ALL ${FWD_COMPONENTS})
 set(CPACK_RPM_COMPONENT_INSTALL 1)
 
 ## daq config
-set(CPACK_RPM_DAQ_FILE_NAME "lsst-daq-${Daq_VERSION}-x86_64.rpm")
-set(CPACK_RPM_DAQ_PACKAGE_NAME "lsst-daq")
+set(CPACK_RPM_DAQ_FILE_NAME "lsst-libdaq-${Daq_VERSION}-x86_64.rpm")
+set(CPACK_RPM_DAQ_PACKAGE_NAME "lsst-libdaq")
 set(CPACK_RPM_DAQ_PACKAGE_REQUIRES "gcc-c++")
 set(CPACK_RPM_DAQ_PACKAGE_PROVIDES
-    "libdaq_ims.so,libdaq_daq.so,libdaq_dsi.so")
+    "libdaq_ims.so"
+    "libdaq_xds.so"
+    "libdaq_daq.so"
+    "libdaq_dcs.so"
+    "libdaq_dsi.so"
+    "libdaq_rms.so"
+)
 set(CPACK_RPM_DAQ_PACKAGE_ARCHITECTURE x86_64)
+
+# Rabbitmq-C config
+set(CPACK_RPM_RABBITMQ-C_FILE_NAME
+    "lsst-librabbitmqc-${Rabbitmq-C_VERSION}-x86_64.rpm")
+set(CPACK_RPM_RABBITMQ-C_PACKAGE_NAME "lsst-librabbitmqc")
 
 # SimpleAmqpClient config
 set(CPACK_RPM_SIMPLEAMQPCLIENT_FILE_NAME
-    "lsst-SimpleAmqpClient-${SimpleAmqpClient_VERSION}-x86_64.rpm")
-set(CPACK_RPM_SIMPLEAMQPCLIENT_PACKAGE_NAME "lsst-SimpleAmqpClient")
+    "lsst-libSimpleAmqpClient-${SimpleAmqpClient_VERSION}-x86_64.rpm")
+set(CPACK_RPM_SIMPLEAMQPCLIENT_PACKAGE_NAME "lsst-libSimpleAmqpClient")
 set(CPACK_RPM_SIMPLEAMQPCLIENT_PACKAGE_REQUIRES
-    "librabbitmq-devel, boost169")
+    "lsst-librabbitmqc, boost169")
 
 # yaml-cpp config
-set(CPACK_RPM_YAML-CPP_FILE_NAME "lsst-yaml-cpp-${Yaml-cpp_VERSION}-x86_64.rpm")
-set(CPACK_RPM_YAML-CPP_PACKAGE_NAME "lsst-yaml-cpp")
+set(CPACK_RPM_YAML-CPP_FILE_NAME 
+    "lsst-libyaml-cpp-${Yaml-cpp_VERSION}-x86_64.rpm")
+set(CPACK_RPM_YAML-CPP_PACKAGE_NAME "lsst-libyaml-cpp")
 
 # cfitsio config
-set(CPACK_RPM_CFITSIO_FILE_NAME "lsst-cfitsio-${Cfitsio_VERSION}-x86_64.rpm")
-set(CPACK_RPM_CFITSIO_PACKAGE_NAME "lsst-cfitsio")
+set(CPACK_RPM_CFITSIO_FILE_NAME "lsst-libcfitsio-${Cfitsio_VERSION}-x86_64.rpm")
+set(CPACK_RPM_CFITSIO_PACKAGE_NAME "lsst-libcfitsio")
 
 # dm_forwarder config
 set(CPACK_RPM_DM_FORWARDER_FILE_NAME
-    "dm_forwarder-${PROJECT_VERSION}-x86_64.rpm")
-set(CPACK_RPM_DM_FORWARDER_PACKAGE_NAME "dm_forwarder")
+    "lsst-dm_forwarder-${GIT_VERSION}-x86_64.rpm")
+set(CPACK_RPM_DM_FORWARDER_PACKAGE_NAME "lsst-dm_forwarder")
 set(CPACK_RPM_DM_FORWARDER_POST_INSTALL_SCRIPT_FILE
     ${CMAKE_SOURCE_DIR}/bin/postinstall.sh)
 

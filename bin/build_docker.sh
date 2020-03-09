@@ -1,3 +1,5 @@
+GIT_TAG=`git describe --tags | sed -z -e s/-/_/g | tr -d '\n'`
+
 docker build \
     --network host \
     --build-arg cmakeURL=https://github.com/Kitware/CMake/releases/download/v3.15.4/cmake-3.15.4-Linux-x86_64.sh \
@@ -7,4 +9,4 @@ docker build \
     --build-arg yamlcppURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/yaml-cpp/yaml-cpp-0.6.3.tar.gz \
     --build-arg cfitsioURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/cfitsio/cfitsio-3.450.tar.gz \
     --build-arg daqURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/daq/R2-V2.7.tgz \
-    -t lsst-dm/dm_forwarder:v1.0.0-rc7 ../
+    -t lsst-dm/dm_forwarder:v${GIT_TAG} ../
