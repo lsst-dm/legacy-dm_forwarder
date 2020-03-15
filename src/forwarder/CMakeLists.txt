@@ -7,6 +7,7 @@ set(OBJ
     "FileSender.cpp"
     "FitsOpener.cpp"
     "FitsFormatter.cpp"
+    "YAMLFormatter.cpp"
     "Formatter.cpp"
     "HeaderFetcher.cpp"
     "MessageBuilder.cpp"

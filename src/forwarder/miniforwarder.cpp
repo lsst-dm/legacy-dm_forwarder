@@ -30,6 +30,7 @@
 #include <core/Consumer.h>
 #include <core/SimpleLogger.h>
 #include <core/RedisConnection.h>
+#include <forwarder/YAMLFormatter.h>
 #include <forwarder/miniforwarder.h>
 
 namespace fs = boost::filesystem;
@@ -430,11 +431,11 @@ void miniforwarder::format_with_header(std::vector<std::string>& ccds,
                                        const std::string header) {
     std::vector<std::future<void>> tasks;
     for (auto&& ccd : ccds) {
-        auto fmt = std::unique_ptr<FitsFormatter>(
-                new FitsFormatter(_daq_mapping, _hdr_mapping));
+        auto fmt = std::unique_ptr<YAMLFormatter>(
+                new YAMLFormatter(_daq_mapping));
         std::future<void> job = std::async(
                 std::launch::async,
-                &FitsFormatter::write_header,
+                &YAMLFormatter::write_header,
                 std::move(fmt),
                 fs::path(ccd),
                 fs::path(header)

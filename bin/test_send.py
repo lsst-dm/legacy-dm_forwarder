@@ -30,6 +30,7 @@ msg["ACK_ID"] = "ack_100"
 msg["TARGET_LOCATION"] = "ARC@141.142.238.15:/tmp"
 msg["SESSION_ID"] = "Session_100"
 msg["JOB_NUM"] = "job_100"
+msg["XFER_PARAMS"] = xfer
 msg["LOCATIONS"] = [ "22/0", "22/1", "22/2" ]
 ch.basic_publish('message', 'f99_consume', yaml.dump(msg))
 
