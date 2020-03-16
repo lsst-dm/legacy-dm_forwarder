@@ -13,6 +13,7 @@ set(OBJ
     "Pixel3d.cpp"
     "DAQDecoder.cpp"
     "DAQFetcher.cpp"
+    "../forwarder/Formatter.cpp"
 )
 
 add_library(lsst_dm_forwarder_daq STATIC ${OBJ})
