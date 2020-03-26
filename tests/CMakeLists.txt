@@ -8,6 +8,7 @@ set(OBJ
     "./daq/DAQFetcherTest.cpp"
     "./daq/DataTest.cpp"
     "./forwarder/miniforwarderTest.cpp"
+    "./forwarder/YAMLFormatterTest.cpp"
 )
 
 add_library(lsst_iip_tests SHARED ${OBJ})
