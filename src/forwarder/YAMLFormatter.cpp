@@ -32,6 +32,8 @@ std::vector<std::string> excluded_keywords {
     "SIMPLE",
     "BITPIX",
     "NAXIS",
+    "NAXIS1",
+    "NAXIS2",
     "EXTEND",
 
     "XTENSION",
@@ -79,6 +81,13 @@ bool YAMLFormatter::contains(const std::string key) {
 }
 
 void YAMLFormatter::write_key(fitsfile* fptr, const YAML::Node& n) {
+    if (!n["keyword"] || !n["value"] || !n["comment"]) {
+        std::ostringstream err;
+        err << "keyword, value or comment do not exist in given node";
+        LOG_CRT << err.str();
+        throw L1::CannotFormatFitsfile(err.str());
+    }
+
     int status = 0;
 
     auto o_key = get<std::string>(n, "keyword");
@@ -94,6 +103,12 @@ void YAMLFormatter::write_key(fitsfile* fptr, const YAML::Node& n) {
     auto val_s = get<std::string>(n, "value");
 
     if (o_key && contains(*o_key)) {
+        return;
+    }
+
+    if (n["value"].Tag() == "!") {
+        fits_write_key(fptr, TSTRING, key, (void *)(*val_s).c_str(), comment,
+                 &status);
         return;
     }
 
@@ -137,7 +152,6 @@ void YAMLFormatter::write_key(fitsfile* fptr, const YAML::Node& n) {
     }
 }
 
-
 void YAMLFormatter::write_header(const fs::path& pix_path,
                                  const fs::path& header_path) {
     int status = 0;
@@ -148,11 +162,37 @@ void YAMLFormatter::write_header(const fs::path& pix_path,
     std::string pix_str = pix_path.string();
     size_t hyphen = pix_str.find_last_of("-");
     size_t dot = pix_str.find_last_of(".");
+
+    if (hyphen == string::npos || dot == string::npos) {
+        std::ostringstream err;
+        err << "Pixel filename " << pix_path.string() << " is not valid. "
+            << "Format is imageName-R00S00.fits";
+        LOG_CRT << err.str();
+        throw L1::CannotFormatFitsfile(err.str());
+    }
+
     std::string sensor = pix_str.substr(hyphen+1, dot-hyphen-1);
 
-    YAML::Node header_node = YAML::LoadFile(header_path.string());
-    YAML::Node primary = header_node["PRIMARY"];
-    YAML::Node primary_common = header_node[sensor + "_PRIMARY"];
+    YAML::Node header_node, primary, primary_common;
+    try {
+        header_node  = YAML::LoadFile(header_path.string());
+        primary = header_node["PRIMARY"];
+        primary_common = header_node[sensor + "_PRIMARY"];
+    }
+    catch (YAML::BadFile& e) {
+        std::ostringstream err;
+        err << "Header file at " << header_path.string() << " is not valid "
+            << "because " << e.what();
+        LOG_CRT << err.str();
+        throw L1::CannotFormatFitsfile(err.str());
+    }
+    catch (YAML::BadSubscript& e) {
+        std::ostringstream err;
+        err << "Header file at " << header_path.string() << " is not valid "
+            << "because " << e.what();
+        LOG_CRT << err.str();
+        throw L1::CannotFormatFitsfile(err.str());
+    }
 
     if (!primary || !primary_common) {
         std::ostringstream err;
@@ -167,13 +207,13 @@ void YAMLFormatter::write_header(const fs::path& pix_path,
         write_key(pix, x);
     }
 
-    for (int i = 0; i  < _daq_mapping.size(); i++) {
-        // write primary_common
-        fits_movabs_hdu(pix, i+2, IMAGE_HDU, &status);
-        for (auto&& x : primary_common) {
-            write_key(pix, x);
-        }
+    // combine with primary common
+    for (auto&& x : primary_common) {
+        write_key(pix, x);
+    }
 
+    for (int i = 0; i  < _daq_mapping.size(); i++) {
+        fits_movabs_hdu(pix, i+2, IMAGE_HDU, &status);
         std::string segment_hdr = sensor + "_Segment" + _daq_mapping[i];
         YAML::Node segment = header_node[segment_hdr];
         if (!segment) {

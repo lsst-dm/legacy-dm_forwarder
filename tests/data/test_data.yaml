@@ -8,3 +8,129 @@ TARGET_LOCATION: "ARC@141.142.238.15:/data/export"
 image: gen1
 sensor: Science
 location: 22/0
+
+# YAMLFormatter test cases
+bool_key1: True
+bool_key2: true
+
+str_key1: "SIMPLE"
+str_key2: "3"
+
+int_key: 3
+int32_key: 2147483647
+nint32_key: -2147483647
+bint32_key: 2147483648
+
+long_key: 9223372036854775807
+nlong_key: -9223372036854775807
+blong_key: 9223372036854775808
+
+dbl_key: 3.14159265359
+nll_key: null
+emty_key: ""
+
+write_key:
+- keyword: NOSIMPLE
+  value: true
+  comment: good
+- keyword: STR
+  value: "string"
+  comment: ""
+- keyword: STR2
+  value: "3"
+  comment: null
+- keyword: INT32
+  value: 3000
+  comment: null
+- keyword: INT64
+  value: 92233720368547
+  comment: null
+- keyword: DOUBLE
+  value: 0.819181
+  comment: null
+- keyword: NULLKEY
+  value: null
+  comment: null
+
+BAD_KEY:
+- keyword: KEY
+  value: null
+
+PRIMARY:
+- keyword: ORIGIN
+  value: LSST DM Header Service
+  comment: FITS file originator
+- keyword: TIMESYS
+  value: TAI
+  comment: The time scale used
+R00S00_PRIMARY:
+- keyword: CCD_MANU
+  value: ITL
+  comment: CCD Manufacturer
+- keyword: CCD_TYPE
+  value: null
+  comment: CCD Model Number
+R00S00_Segment10:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment11:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment12:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment13:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment14:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment15:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment16:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment17:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment00:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment01:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment02:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment03:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment04:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment05:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment06:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector
+R00S00_Segment07:
+- keyword: DTV2
+  value: 0
+  comment: detector transformation vector

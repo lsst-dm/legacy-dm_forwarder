@@ -22,9 +22,9 @@
  */
 
 #include <cstdio>
-#include "core/Exceptions.h"
-#include "core/SimpleLogger.h"
-#include "forwarder/Formatter.h"
+#include <core/Exceptions.h>
+#include <core/SimpleLogger.h>
+#include <forwarder/Formatter.h>
 
 namespace fs = boost::filesystem;
 
