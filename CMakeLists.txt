@@ -47,7 +47,7 @@ set(Boost_LIBRARY_DIRS /usr/lib64/boost169)
 # Daq rpm variables
 set(Daq_VERSION 4.2.3)
 set(Daq_URL "${LSST_REPO}/daq/R4-V2.3.tgz")
-set(Daq_DIR "/srv/nfs/lsst-daq/daq-sdk/current")
+set(Daq_DIR "/opt/lsst/daq")
 set(Daq_RPM_DIR "/opt/lsst/daq")
 set(Daq_INCLUDE_DIRS ${Daq_DIR}/include)
 set(Daq_LIBRARY_DIRS ${Daq_DIR}/x86/lib)
@@ -87,6 +87,7 @@ foreach(x ${daq_libs})
         HINTS
             "${Daq_LIBRARY_DIRS}"
             "/usr/lib64/daq"
+            "/opt/lsst/daq/x86/lib/"
     )
 endforeach()
 
@@ -96,6 +97,7 @@ set(boost_libs
     "boost_system"
     "boost_thread"
     "boost_unit_test_framework"
+    "boost_program_options"
 )
 foreach(x ${boost_libs})
     find_library(
@@ -120,6 +122,7 @@ else()
     add_subdirectory("./src/core")
     add_subdirectory(${Daq_SRC_DIR})
     add_subdirectory("./src/forwarder")
+    add_subdirectory("./src/util")
     if(TEST)
         add_subdirectory("./tests")
     endif()

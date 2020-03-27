@@ -35,6 +35,7 @@ target_link_libraries(test_exe PRIVATE
     lsst_dm_forwarder
     lsst_dm_forwarder_daq
     lsst_iip_core
+    lsst_iip_util
     ${daq_ims}
     ${daq_xds}
     ${daq_daq}
