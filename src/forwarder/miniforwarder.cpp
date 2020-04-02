@@ -26,12 +26,18 @@
 #include <netdb.h>
 #include <future>
 
+#include <ims/Image.hh>
+#include <ims/ImageMetadata.hh>
+#include <ims/Barrier.hh>
+
 #include <core/Exceptions.h>
 #include <core/Consumer.h>
 #include <core/SimpleLogger.h>
 #include <core/RedisConnection.h>
 #include <forwarder/YAMLFormatter.h>
 #include <forwarder/miniforwarder.h>
+
+#define TIMEOUT 15*1000*1000
 
 namespace fs = boost::filesystem;
 
@@ -149,6 +155,9 @@ miniforwarder::miniforwarder(const std::string& config,
 
     _beacon = std::unique_ptr<Beacon>(new Beacon(_hb_params));
     _watcher = std::unique_ptr<Watcher>(new Watcher());
+
+    _store = std::unique_ptr<IMS::Store>(new IMS::Store(_partition.c_str()));
+    _stream = std::unique_ptr<IMS::Stream>(new IMS::Stream(*_store, TIMEOUT));
 }
 
 miniforwarder::~miniforwarder() {
@@ -188,7 +197,8 @@ void miniforwarder::xfer_params(const YAML::Node& n) {
     try {
         publish_ack(n);
 
-        auto locations = n["XFER_PARAMS"]["RAFT_CCD_LIST"].as<std::vector<std::string>>();
+        auto locations = n["XFER_PARAMS"]["RAFT_CCD_LIST"]
+                .as<std::vector<std::string>>();
         // auto locations = n["LOCATIONS"].as<std::vector<std::string>>();
         bool valid = check_valid_board(locations);
         if (!valid) {
@@ -264,6 +274,26 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         LOG_CRT << "Cannot read IMAGE_ID from YAML Node";
         return;
     }
+
+    LOG_DBG << "IMS::Image blocking for image " << image_id;
+    IMS::Image image(*_store, *_stream, TIMEOUT);
+    LOG_DBG << "Acquired image " << image_id;
+
+    IMS::ImageMetadata meta = image.metadata();
+    std::string name = std::string(meta.name());
+    std::string folder = std::string(meta.folder());
+
+    if (name != image_id || folder != _folder) {
+        LOG_CRT << "Currently streaming image " << name << " in " << folder
+            << " is not what is being expected " << image_id << " from "
+            << _folder;
+        return;
+    }
+
+    LOG_DBG << "Barrier blocking for image " << image_id;
+    IMS::Barrier barrier(image);
+    barrier.block();
+    LOG_DBG << "Barrier released for image " << image_id;
 
     try {
         std::vector<std::future<void>> tasks;
@@ -533,12 +563,12 @@ void miniforwarder::register_fwd() {
     int port = _hb_params.redis_port;
     int db = _hb_params.redis_db;
 
-    try { 
+    try {
         RedisConnection con(redis_host, port, db);
         con.lpush(_forwarder_list, { msg });
         con.exec();
         LOG_INF << "Set forwarder in redis list";
-    } 
+    }
     catch (L1::RedisError& e) { }
 }
 

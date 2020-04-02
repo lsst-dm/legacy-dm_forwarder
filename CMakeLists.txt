@@ -78,6 +78,7 @@ set(daq_libs
     "daq_dcs"
     "daq_dsi"
     "daq_rms"
+    "daq_net"
 )
 foreach(x ${daq_libs})
     find_library(
