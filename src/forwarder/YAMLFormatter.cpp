@@ -115,15 +115,15 @@ void YAMLFormatter::write_key(fitsfile* fptr, const YAML::Node& n) {
     if (val_b) {
         fits_write_key(fptr, TLOGICAL, key, &(*val_b), comment, &status);
     }
-    else if (val_d) {
-        fits_write_key(fptr, TDOUBLE, key, &(*val_d), comment, &status);
-    }
     else if (val_i32) {
-        fits_write_key(fptr, TLONG, key, &(*val_i32), comment, &status);
+        fits_write_key(fptr, TINT, key, &(*val_i32), comment, &status);
     }
     else if (val_i64) {
         fits_write_key(fptr, TLONGLONG, key, &(*val_i64), comment,
                  &status);
+    }
+    else if (val_d) {
+        fits_write_key(fptr, TDOUBLE, key, &(*val_d), comment, &status);
     }
     else if (val_s) {
         fits_write_key(fptr, TSTRING, key, (void *)(*val_s).c_str(), comment,
