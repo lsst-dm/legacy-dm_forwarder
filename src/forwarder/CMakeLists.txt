@@ -43,6 +43,7 @@ target_link_libraries(dm_forwarder PRIVATE
     ${daq_dcs}
     ${daq_dsi}
     ${daq_rms}
+    ${daq_net}
     ${boost_log}
     ${boost_thread}
     ${boost_filesystem}

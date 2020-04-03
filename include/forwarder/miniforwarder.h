@@ -29,17 +29,20 @@
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include "core/IIPBase.h"
-#include "core/SimplePublisher.h"
-#include "core/HeartBeat.h"
+#include <ims/Stream.hh>
+#include <ims/Store.hh>
 
-#include "forwarder/Scoreboard.h"
-#include "forwarder/MessageBuilder.h"
-#include "forwarder/HeaderFetcher.h"
-#include "forwarder/Formatter.h"
-#include "forwarder/FileSender.h"
-#include "forwarder/ReadoutPattern.h"
-#include "daq/DAQFetcher.h"
+#include <core/IIPBase.h>
+#include <core/SimplePublisher.h>
+#include <core/HeartBeat.h>
+
+#include <forwarder/Scoreboard.h>
+#include <forwarder/MessageBuilder.h>
+#include <forwarder/HeaderFetcher.h>
+#include <forwarder/Formatter.h>
+#include <forwarder/FileSender.h>
+#include <forwarder/ReadoutPattern.h>
+#include <daq/DAQFetcher.h>
 
 class miniforwarder : public IIPBase {
     public:
@@ -113,6 +116,8 @@ class miniforwarder : public IIPBase {
         std::unique_ptr<Watcher> _watcher;
         std::unique_ptr<Beacon> _beacon;
         std::unique_ptr<FileSender> _sender;
+        std::unique_ptr<IMS::Store> _store;
+        std::unique_ptr<IMS::Stream> _stream;
 
         MessageBuilder _builder;
         HeaderFetcher _hdr;

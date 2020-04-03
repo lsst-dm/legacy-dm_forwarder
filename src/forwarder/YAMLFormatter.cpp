@@ -163,7 +163,7 @@ void YAMLFormatter::write_header(const fs::path& pix_path,
     size_t hyphen = pix_str.find_last_of("-");
     size_t dot = pix_str.find_last_of(".");
 
-    if (hyphen == string::npos || dot == string::npos) {
+    if (hyphen == std::string::npos || dot == std::string::npos) {
         std::ostringstream err;
         err << "Pixel filename " << pix_path.string() << " is not valid. "
             << "Format is imageName-R00S00.fits";
