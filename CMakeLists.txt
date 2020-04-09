@@ -47,7 +47,7 @@ set(Boost_LIBRARY_DIRS /usr/lib64/boost169)
 # Daq rpm variables
 set(Daq_VERSION 4.2.3)
 set(Daq_URL "${LSST_REPO}/daq/R4-V2.3.tgz")
-set(Daq_DIR "/opt/lsst/daq")
+set(Daq_DIR "/srv/nfs/lsst-daq/daq-sdk/current")
 set(Daq_RPM_DIR "/opt/lsst/daq")
 set(Daq_INCLUDE_DIRS ${Daq_DIR}/include)
 set(Daq_LIBRARY_DIRS ${Daq_DIR}/x86/lib)
@@ -86,8 +86,6 @@ foreach(x ${daq_libs})
         name lib${x}.so
         HINTS
             "${Daq_LIBRARY_DIRS}"
-            "/usr/lib64/daq"
-            "/opt/lsst/daq/x86/lib/"
     )
 endforeach()
 

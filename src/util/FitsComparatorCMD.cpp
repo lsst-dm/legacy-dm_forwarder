@@ -1,22 +1,43 @@
-//
-// Created by Samuel Cappon on 3/9/20.
-//
+/*
+ * This file is part of dm_forwarder
+ *
+ * Developed for the LSST Data Management System.
+ * This product includes software developed by the LSST Project
+ * (https://www.lsst.org).
+ * See the COPYRIGHT file at the top-level directory of this distribution
+ * for details of code ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include <util/FitsComparator.h>
 #include <core/Exceptions.h>
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/program_options/errors.hpp>
+#include <memory>
+
 
 namespace po = boost::program_options;
 
-main(int ac, char *av[]) {
-    vector<string> n;
+int main(int ac, char *av[]) {
+    std::vector<std::string> n;
 
     po::options_description desc("Allowed options");
     desc.add_options()
     ("help", "produce help message")
-    ("input-file", po::value < vector < string >> (), "input file (2 required)")
+    ("input-file", po::value < std::vector < std::string >> (), "input file (2 required)")
     ("segments,s", "compare by segments")
     ("headers,h", "compare by headers")
     ("hdu,u", "compare by header data units");
@@ -29,17 +50,17 @@ main(int ac, char *av[]) {
     po::notify(vm);
 
     if (vm.count("help")) {
-        cout << desc << "\n";
+        std::cout << desc << std::endl;
         return 1;
     }
 
     if (!vm.count("input-file")) {
-        cout << "No input files were entered\n\n try --help option";
+        std::cout << "No input files were entered" << std::endl << "try --help option";
         exit(0);
     } else {
-        n = vm["input-file"].as < vector < string >> ();
+        n = vm["input-file"].as < std::vector < std::string >> ();
         if (n.size() != 2) {
-            cout << n.size() << " input files were provided. 2 fits files must be provided.\n";
+            std::cout << n.size() << " input files were provided. 2 fits files must be provided." << std::endl;
             exit(0);
         }
     }
@@ -50,37 +71,37 @@ main(int ac, char *av[]) {
         try {
             if (vm.count("headers")) {
                 if (fc.compare_headers()) {
-                    cout << "\nAll headers are equal\n";
+                    std::cout << std::endl << "All headers are equal" << std::endl;
                 } else {
-                    cout << "\nNot all headers are equal\n";
+                    std::cout << std::endl << "Not all headers are equal" << std::endl;
                 }
             }
         } catch (L1::CfitsioError e) {
-            cerr << "Error while trying to compare headers: " << e.what() << "\n";
+            std::cerr << "Error while trying to compare headers: " << e.what() << std::endl;
         }
         try {
             if (vm.count("segments")) {
                 if (fc.compare_by_segments()) {
-                    cout << "Segments are equal\n";
+                    std::cout << "Segments are equal" << std::endl;
                 } else {
-                    cout << "Segments are not equal\n";
+                    std::cout << "Segments are not equal" << std::endl;
                 }
             }
         } catch (L1::CfitsioError e) {
-            cerr << "Error while trying to compare by segments: " << e.what() << "\n";
+            std::cerr << "Error while trying to compare by segments: " << e.what() << std::endl;
         }
         try {
             if (vm.count("hdu")) {
                 if (fc.compare_by_hdu()) {
-                    cout << "HDU's are equal\n";
+                    std::cout << "HDU's are equal" << std::endl;
                 } else {
-                    cout << "HDU's are not equal\n";
+                    std::cout << "HDU's are not equal" << std::endl;
                 }
             }
         } catch (L1::CfitsioError e) {
-            cerr << "Error while trying to compare by hdu: " << e.what() << "\n";
+            std::cerr << "Error while trying to compare by hdu: " << e.what() << std::endl;
         }
     } catch (L1::CfitsioError e) {
-        cerr << "Error: " << e.what() << "\n";
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 }

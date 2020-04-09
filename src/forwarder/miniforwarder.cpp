@@ -587,7 +587,6 @@ void miniforwarder::register_fwd() {
     std::string redis_host = _hb_params.redis_host;
     int port = _hb_params.redis_port;
     int db = _hb_params.redis_db;
-    std::string passwd = _hb_params.redis_passwd;
 
     try {
         RedisConnection con(redis_host, port, db);

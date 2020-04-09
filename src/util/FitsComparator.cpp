@@ -1,109 +1,136 @@
-//
-// Created by Samuel Cappon on 3/5/20.
-//
+/*
+ * This file is part of dm_forwarder
+ *
+ * Developed for the LSST Data Management System.
+ * This product includes software developed by the LSST Project
+ * (https://www.lsst.org).
+ * See the COPYRIGHT file at the top-level directory of this distribution
+ * for details of code ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include <util/FitsComparator.h>
 #include <fitsio.h>
 #include <core/Exceptions.h>
 #include <iostream>
 #include <memory>
-#include <vector>
-#include <map>
 #include <algorithm>
 #include <iterator>
 #include <core/SimpleLogger.h>
 
-using namespace std;
-
-FitsComparator::FitsComparator(string fitsfile1, string fitsfile2) {
+FitsComparator::FitsComparator(std::string fitsfile1, std::string fitsfile2) {
     int status = 0;
     int hdunum;
 
-        fits_open_file(&_fptr, fitsfile1.c_str(), READONLY, &status);
-        fits_open_file(&_fptr2, fitsfile2.c_str(), READONLY, &status);
-        if(status){
-            string err = "Failed to open files " + fitsfile1 + " and " + fitsfile2 + ", check paths and extensions.";
-            LOG_CRT << err;
-            throw L1::CfitsioError(err);
+    fits_open_file(_fptr.get(), fitsfile1.c_str(), READONLY, &status);
+    fits_open_file(_fptr2.get(), fitsfile2.c_str(), READONLY, &status);
+
+    fits_get_num_hdus(*_fptr, &hdunum, &status);
+    if (hdunum != 17){
+        std::string wrn = "File " + fitsfile1 + " does not have 17 hdu's. Total hdu = " + std::to_string(hdunum);
+        LOG_WRN << wrn;
+    }
+
+    fits_get_num_hdus(*_fptr2, &hdunum, &status);
+    if (hdunum != 17){
+            std::string wrn = "File " + fitsfile2 + " does not have 17 hdu's. Total hdu = " + std::to_string(hdunum);
+            LOG_WRN << wrn;
         }
-        fits_get_num_hdus(_fptr, &hdunum, &status);
-        if(hdunum != 17){
-            string warning = "File " + fitsfile1 + " does not have 17 hdu's. Total hdu = " + to_string(hdunum);
-            LOG_CRT << warning;
-        }
-        fits_get_num_hdus(_fptr2, &hdunum, &status);
-        if(hdunum != 17){
-            string warning = "File " + fitsfile2 + " does not have 17 hdu's. Total hdu = " + to_string(hdunum);
-            LOG_CRT << warning;
-        }
+
+    if (status){
+        std::string err = "Failed to open files " + fitsfile1 + " and " + fitsfile2 + ", check paths and extensions.";
+        LOG_CRT << err;
+        throw L1::CfitsioError(err);
+    }
 }
 
 FitsComparator::~FitsComparator() {
     int status = 0;
-    fits_close_file(_fptr, &status);
-    fits_close_file(_fptr2, &status);
+    fits_close_file(*_fptr, &status);
+    fits_close_file(*_fptr2, &status);
 }
 
-vector<string> FitsComparator::get_segments(fitsfile *fptr) {
+std::vector<std::string> FitsComparator::get_segments(fitsfile *fptr) {
     int status = 0, i;
     char segment_value[FLEN_VALUE], segment_comment[FLEN_COMMENT];
-    vector<string> segments;
+    std::vector<std::string> segments;
 
     for (i = 2; i <= 17; i++) {
         fits_movabs_hdu(fptr, i, NULL, &status);
         fits_read_key(fptr, TSTRING, "EXTNAME", segment_value, segment_comment, &status);
-        if(status){
-            string err = "Cannot read EXTNAME key from hdu " + to_string(i);
+        if (status){
+            std::string err = "Cannot read EXTNAME key from hdu " + std::to_string(i);
             LOG_CRT << err;
             throw L1::CfitsioError(err);
         }
-        string segment = string(segment_value);
+        std::string segment = std::string(segment_value);
         segments.push_back(segment);
     }
+
     return segments;
 }
 
-multimap<string, string> FitsComparator::get_header_values(fitsfile *fptr){
+std::multimap<std::string, std::string> FitsComparator::get_header_values(fitsfile *fptr){
     int status = 0, i, nkeys;
     char keyname[FLEN_KEYWORD], value[FLEN_VALUE], comment[FLEN_COMMENT];
 
     fits_get_hdrspace(fptr, &nkeys, NULL, &status);
 
-    multimap<string, string> header_values;
+    std::multimap<std::string, std::string> header_values;
 
-    for(i = 1; i <= nkeys; i++){
+    for (i = 1; i <= nkeys; i++){
         fits_read_keyn(fptr, i, keyname, value, comment, &status);
-        header_values.insert(pair<string, string>(keyname, value));
+        header_values.insert(std::pair<std::string, std::string>(keyname, value));
     }
+
+    if (status){
+        std::string err = "Error getting header values";
+        LOG_CRT << err;
+        throw L1::CfitsioError(err);
+    }
+
     return header_values;
 }
 
 
-vector<vector<int32_t>> FitsComparator::get_pixels(fitsfile *fptr){
+std::vector<std::vector<int32_t>> FitsComparator::get_pixels(fitsfile *fptr){
     int bitpix, naxis, i, status = 0;
     long naxes[2];
     long fpixel[2];
 
     fits_get_img_param(fptr, 2, &bitpix, &naxis, naxes, &status);
-    if(status){
-        string err = "Error getting image parameters.";
-        LOG_CRT << err;
-        throw L1::CfitsioError(err);
-    }
 
-    vector<vector<int32_t>> pixels;
-    vector<int32_t> row;
+    std::vector<std::vector<int32_t>> pixels;
+    std::vector<int32_t> row;
 
     fpixel[0] = 1;
     fpixel[1] = 1;
 
-    unique_ptr<int32_t[]> pix(new int32_t[naxes[0]]);
+    std::unique_ptr<int32_t[]> pix(new int32_t[naxes[0]]);
 
-    for(i = 0; i < naxes[1]; i++) {
+    for (i = 0; i < naxes[1]; i++) {
         fits_read_pix(fptr, TINT, fpixel, naxes[0], NULL, pix.get(), NULL, &status);
         row.assign(pix.get(), pix.get() + naxes[0]);
         pixels.push_back(row);
         fpixel[0]++;
+    }
+
+    if (status){
+        std::string err = "Error getting pixels.";
+        LOG_CRT << err;
+        throw L1::CfitsioError(err);
     }
 
     return pixels;
@@ -112,33 +139,41 @@ vector<vector<int32_t>> FitsComparator::get_pixels(fitsfile *fptr){
 
 bool FitsComparator::compare_by_segments(){
     int status = 0, i, ii;
-    vector<string> file1_segments = get_segments(_fptr);
+    std::vector<std::string> file1_segments = get_segments(*_fptr);
 
     for (i = 2; i < 18; i++) {
         char segment_value[FLEN_VALUE], segment_comment[FLEN_COMMENT];
 
-        fits_movabs_hdu(_fptr, i, NULL, &status);
-        fits_movabs_hdu(_fptr2, i, NULL, &status);
+        fits_movabs_hdu(*_fptr, i, NULL, &status);
+        fits_movabs_hdu(*_fptr2, i, NULL, &status);
 
-        fits_read_key(_fptr2, TSTRING, "EXTNAME", segment_value, segment_comment, &status);
-        if(status){
-            string err = "Cannot read EXTNAME key from hdu " + to_string(i);
+        fits_read_key(*_fptr2, TSTRING, "EXTNAME", segment_value, segment_comment, &status);
+        if (status){
+            std::string err = "Cannot read EXTNAME key from hdu " + std::to_string(i);
             LOG_CRT << err;
             throw L1::CfitsioError(err);
         }
 
-        string file2_segment = string(segment_value);
+        std::string file2_segment = std::string(segment_value);
 
         if (file2_segment != file1_segments[i - 2]) {
             for (int ii = 0; ii < file1_segments.size(); ii++) {
                 if (file2_segment == file1_segments[ii]) {
-                    fits_movabs_hdu(_fptr, ii+2, NULL, &status);
+                    fits_movabs_hdu(*_fptr, ii+2, NULL, &status);
                     break;
                 }
             }
         }
-        if (get_pixels(_fptr) != get_pixels(_fptr2)) return false;
+        if (get_pixels(*_fptr) != get_pixels(*_fptr2)) return false;
+
     }
+
+    if (status){
+        std::string err = "Error trying to compare by segments";
+        LOG_CRT << err;
+        throw L1::CfitsioError(err);
+    }
+
     return true;
 }
 
@@ -147,10 +182,16 @@ bool FitsComparator::compare_by_hdu(){
     int status = 0, i;
 
     for (i = 2; i < 18; i++) {
-        fits_movabs_hdu(_fptr, i, NULL, &status);
-        fits_movabs_hdu(_fptr2, i, NULL, &status);
+        fits_movabs_hdu(*_fptr, i, NULL, &status);
+        fits_movabs_hdu(*_fptr2, i, NULL, &status);
 
-        if(get_pixels(_fptr) != get_pixels(_fptr2)) return false;
+        if(get_pixels(*_fptr) != get_pixels(*_fptr2)) return false;
+    }
+
+    if (status){
+        std::string err = "Error trying to compare by hdu";
+        LOG_CRT << err;
+        throw L1::CfitsioError(err);
     }
 
     return true;
@@ -160,49 +201,87 @@ bool FitsComparator::compare_by_hdu(){
 bool FitsComparator::compare_headers(){
     int status = 0, i, ii;
     bool r = true;
-    vector<string> file1_segments = get_segments(_fptr);
+    std::vector<std::string> file1_segments = get_segments(*_fptr);
 
     for(i = 1; i < 18; i++) {
         char segment_value[FLEN_VALUE], segment_comment[FLEN_COMMENT];
-        string file2_segment;
+        std::string file2_segment;
 
-        fits_movabs_hdu(_fptr, i, NULL, &status);
-        fits_movabs_hdu(_fptr2, i, NULL, &status);
+        fits_movabs_hdu(*_fptr, i, NULL, &status);
+        fits_movabs_hdu(*_fptr2, i, NULL, &status);
 
-        if(i > 1) {
-            fits_read_key(_fptr2, TSTRING, "EXTNAME", segment_value, segment_comment, &status);
-            if(status){
-                string err = "Cannot read EXTNAME key from hdu " + to_string(i);
+        if (i > 1) {
+            fits_read_key(*_fptr2, TSTRING, "EXTNAME", segment_value, segment_comment, &status);
+            if (status){
+                std::string err = "Cannot read EXTNAME key from hdu " + std::to_string(i);
                 LOG_CRT << err;
                 throw L1::CfitsioError(err);
             }
-            file2_segment = string(segment_value);
+            file2_segment = std::string(segment_value);
 
             if (file2_segment != file1_segments[i - 2]) {
                 for (int ii = 0; ii < file1_segments.size(); ii++) {
                     if (file2_segment == file1_segments[ii]) {
-                        fits_movabs_hdu(_fptr, ii + 2, NULL, &status);
+                        fits_movabs_hdu(*_fptr, ii + 2, NULL, &status);
                         break;
                     }
                 }
             }
-            cout << "\n=== " << file2_segment << "\n";
-        } else cout << "=== " << "PRIMARY" << "\n";
+            std::cout << std::endl << "=== " << file2_segment << std::endl;
+        } else std::cout << "=== " << "PRIMARY" << std::endl;
 
-        multimap<string, string> file1_header_values = get_header_values(_fptr);
-        multimap<string, string> file2_header_values = get_header_values(_fptr2);
-        map<string, string> symmetric_difference;
+        std::multimap<std::string, std::string> file1_header_values = get_header_values(*_fptr);
+        std::multimap<std::string, std::string> file2_header_values = get_header_values(*_fptr2);
+        std::map<std::string, std::string> symmetric_difference;
 
         set_symmetric_difference(file1_header_values.begin(), file1_header_values.end(),
                                 file2_header_values.begin(), file2_header_values.end(),
                                 inserter(symmetric_difference, symmetric_difference.end()));
 
-        if(symmetric_difference.size() > 0) {
-            for (pair <string, string> k : symmetric_difference) {
-                cout << k.first << "\n";
+        if (symmetric_difference.size() > 0) {
+            for (std::pair <std::string, std::string> k : symmetric_difference) {
+                std::cout << k.first << std::endl;
             }
             r = false;
-        } else cout << "Segments are equal\n";
+        } else std::cout << "Segments are equal" << std::endl;
     }
+
+    if (status){
+        std::string err = "Error trying to compare headers";
+        LOG_CRT << err;
+        throw L1::CfitsioError(err);
+    }
+
     return r;
 }
+/*
+bool FitsComparator::compare_segments(std::string segment1, std::string segment2){
+
+    int i, status = 0;
+
+    std::vector<std::string> segs = get_segments(*_fptr);
+    std::vector<std::string> segs2 = get_segments(*_fptr2);
+
+    for (i = 0; i < segs.size(); i++){
+        if (segs[i] == segment1){
+            fits_movabs_hdu(*_fptr, i+2, NULL, &status);
+            break;
+        }
+    }
+
+    for (i = 0; i < segs2.size(); i++){
+        if (segs2[i] == segment2){
+            fits_movabs_hdu(*_fptr2, i+2, NULL, &status);
+            break;
+        }
+    }
+
+    std::vector<std::vector<int32_t>> pix1 = get_pixels(*_fptr);
+    std::vector<std::vector<int32_t>> pix2 = get_pixels(*_fptr2);
+
+    if (pix1 == pix2){
+        return true;
+    } else {
+        return false;
+    }
+}*/
