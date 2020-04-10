@@ -254,34 +254,3 @@ bool FitsComparator::compare_headers(){
 
     return r;
 }
-/*
-bool FitsComparator::compare_segments(std::string segment1, std::string segment2){
-
-    int i, status = 0;
-
-    std::vector<std::string> segs = get_segments(*_fptr);
-    std::vector<std::string> segs2 = get_segments(*_fptr2);
-
-    for (i = 0; i < segs.size(); i++){
-        if (segs[i] == segment1){
-            fits_movabs_hdu(*_fptr, i+2, NULL, &status);
-            break;
-        }
-    }
-
-    for (i = 0; i < segs2.size(); i++){
-        if (segs2[i] == segment2){
-            fits_movabs_hdu(*_fptr2, i+2, NULL, &status);
-            break;
-        }
-    }
-
-    std::vector<std::vector<int32_t>> pix1 = get_pixels(*_fptr);
-    std::vector<std::vector<int32_t>> pix2 = get_pixels(*_fptr2);
-
-    if (pix1 == pix2){
-        return true;
-    } else {
-        return false;
-    }
-}*/
