@@ -8,12 +8,30 @@ LOGGING_DIR: /var/log/iip
 WORK_DIR: /var/tmp/data
 
 # daq partition name
-PARTITION: ncsa-comcam
-FOLDER: .templates
+# Note: remember to check if partition name exists in the keyword below from
+# line 24-26. Otherwise, there will be weird error.
+PARTITION: cam-comcam
+FOLDER: raw
 
 # LCA-13501 segment order
-DAQ_MAPPING: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
-HDR_MAPPING: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+PATTERN:
+    DATA_SEGMENT_NAME:
+        science: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+        guide: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+        wavefront: [ 10, 11, 12, 13, 14, 15, 16, 17 ]
+    DATA_SEGMENT:
+        #SCIENCE: [ 15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7 ]
+        science: [ 8, 9, 10, 11, 12, 13, 14, 15, 7, 6, 5, 4, 3, 2, 1, 0 ]
+        guide: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]
+        wavefront: [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+    DATA_SENSOR:
+        science: [ 2, 1, 0 ]
+        guide: [ 1, 0 ]
+        wavefront: [ 1, 0 ]
+    XOR:
+        science: 0x1FFFF
+        guide: 0x200000
+        wavefront: 0x200000
 
 # daq location patterns in the hardware. These values are pre-defined here so
 # that forwarder can throw exception when someone gives wrong "raft/ccd"
@@ -21,6 +39,7 @@ HDR_MAPPING: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
 # constructor
 ats: [ 00/0 ]
 ncsa-comcam: [ 22/0, 22/1, 22/2 ]
+cam-comcam: [ 22/0, 22/1, 22/2 ]
 
 # rabbitMQ broker address
 BASE_BROKER_ADDR: 141.142.238.15:5672/%2ftest_cc

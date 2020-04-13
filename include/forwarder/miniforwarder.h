@@ -108,8 +108,6 @@ class miniforwarder : public IIPBase {
         std::map<const std::string,
             std::function<void (const YAML::Node&)> > _actions;
         std::vector<std::string> _daq_locations;
-        std::vector<std::string> _hdr_mapping;
-        std::vector<std::string> _daq_mapping;
 
         std::unique_ptr<SimplePublisher> _pub;
         std::unique_ptr<Scoreboard> _db;
@@ -118,6 +116,7 @@ class miniforwarder : public IIPBase {
         std::unique_ptr<FileSender> _sender;
         std::unique_ptr<IMS::Store> _store;
         std::unique_ptr<IMS::Stream> _stream;
+        std::unique_ptr<ReadoutPattern> _pattern;
 
         MessageBuilder _builder;
         HeaderFetcher _hdr;

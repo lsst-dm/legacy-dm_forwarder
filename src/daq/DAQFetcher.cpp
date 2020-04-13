@@ -24,12 +24,10 @@
 #include <sstream>
 #include <future>
 #include <ims/Image.hh>
-#include <daq/ScienceSet.hh>
-#include <daq/WavefrontSet.hh>
-#include <daq/GuidingSet.hh>
 #include <core/Exceptions.h>
 #include <core/SimpleLogger.h>
 #include <forwarder/Formatter.h>
+#include <forwarder/ReadoutPattern.h>
 #include <daq/DAQDecoder.h>
 #include <daq/DAQFetcher.h>
 
@@ -37,12 +35,13 @@ namespace fs = boost::filesystem;
 
 DAQFetcher::DAQFetcher(const std::string& partition,
                        const std::string& folder,
-                       std::vector<std::string> daq_mapping,
-                       std::vector<std::string> hdr_mapping) :
+                       const std::vector<int>& data_segment,
+                       const int xor_pattern) :
         _folder{folder},
         // Bug: Invalid partition name segfaults from DAQ
         _store(partition.c_str()),
-        _fmt(daq_mapping, hdr_mapping) {
+        _xor{xor_pattern},
+        _fmt(data_segment) {
 }
 
 void DAQFetcher::fetch(const fs::path& prefix,
@@ -70,7 +69,7 @@ void DAQFetcher::fetch(const fs::path& prefix,
 
     DAQ::Sensor::Type sensor_type;
     try {
-        sensor_type = sensor(mine);
+        sensor_type = ReadoutPattern::sensor(location);
     }
     catch (L1::InvalidLocation& e) {
         std::ostringstream err;
@@ -118,29 +117,6 @@ void DAQFetcher::fetch(const fs::path& prefix,
     }
 }
 
-DAQ::Sensor::Type DAQFetcher::sensor(const DAQ::Location& location) {
-    DAQ::ScienceSet s;
-    DAQ::GuidingSet g;
-    DAQ::WavefrontSet w;
-
-    if (!location) {
-        std::ostringstream err;
-        err << "Invalid Location " << location;
-        LOG_CRT << err.str();
-        throw L1::InvalidLocation(err.str());
-    }
-
-    if (s.has(location)) return DAQ::Sensor::Type::SCIENCE;
-    else if (g.has(location)) return DAQ::Sensor::Type::GUIDE;
-    else if (w.has(location)) return DAQ::Sensor::Type::WAVEFRONT;
-    else {
-        std::ostringstream err;
-        err << "DAQ Location is undefined sensor type.";
-        LOG_CRT << err.str();
-        throw L1::InvalidLocation(err.str());
-    }
-}
-
 Pixel3d DAQFetcher::declutter(std::vector<Data>& data,
                               uint64_t samples,
                               DAQ::Sensor::Type sensor) {
@@ -152,9 +128,9 @@ Pixel3d DAQFetcher::declutter(std::vector<Data>& data,
 
     for (auto&& x : data) {
         for (int i = 0; i < sensor; i++) {
-            for (int j = offset; j < x.samples(); j++) {
+            for (int j = 0; j < x.samples(); j++) {
                 for (int k = 0; k < segments; k++) {
-                    pix[i][k][j] = x.pixel(j, i, k);
+                    pix[i][k][j+offset] = _xor ^ x.pixel(j, i, k);
                 }
             }
         }

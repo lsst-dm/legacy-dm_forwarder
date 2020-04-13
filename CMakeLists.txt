@@ -105,11 +105,11 @@ foreach(x ${boost_libs})
     )
 endforeach()
 
-if (RMQC) 
+if (RMQC)
     set(FWD_COMPONENTS "rabbitmq-c")
     add_subdirectory("./etc/rpms/rabbitmq-c")
 elseif (RPMS)
-    set(FWD_COMPONENTS 
+    set(FWD_COMPONENTS
         "daq" "SimpleAmqpClient" "yaml-cpp" "cfitsio")
     add_subdirectory("./etc/rpms/daq")
     add_subdirectory("./etc/rpms/SimpleAmqpClient")
@@ -157,7 +157,7 @@ set(CPACK_RPM_SIMPLEAMQPCLIENT_PACKAGE_REQUIRES
     "lsst-librabbitmqc, boost169")
 
 # yaml-cpp config
-set(CPACK_RPM_YAML-CPP_FILE_NAME 
+set(CPACK_RPM_YAML-CPP_FILE_NAME
     "lsst-libyaml-cpp-${Yaml-cpp_VERSION}-x86_64.rpm")
 set(CPACK_RPM_YAML-CPP_PACKAGE_NAME "lsst-libyaml-cpp")
 

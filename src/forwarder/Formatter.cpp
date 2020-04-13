@@ -22,37 +22,24 @@
  */
 
 #include <sstream>
-#include <unordered_set>
-#include <algorithm>
 #include <future>
 #include <core/SimpleLogger.h>
 #include <core/Exceptions.h>
-#include <forwarder/Formatter.h>
 #include <core/RedisConnection.h>
+#include <forwarder/Formatter.h>
 
 namespace fs = boost::filesystem;
 
-Formatter::Formatter(const std::vector<std::string>& daq_mapping,
-                     const std::vector<std::string>& hdr_mapping) :
-        _daq_mapping{daq_mapping},
-        _hdr_mapping{hdr_mapping} {
-
+Formatter::Formatter(const std::vector<int>& data_segment) :
+        _data_segment{data_segment} {
     _db = std::unique_ptr<RedisConnection>(
             new RedisConnection("localhost", 6379, 0));
-
-    if (hdr_mapping.size() != daq_mapping.size()) {
-        std::ostringstream err;
-        err << "DAQ(" << daq_mapping.size() << ") and Header("
-            << hdr_mapping.size() << ") have different segment sizes.";
-        LOG_CRT << err.str();
-        throw L1::CannotFormatFitsfile(err.str());
-    }
 }
 
 std::string Formatter::write_pix_file(int32_t** ccd,
-                               int32_t& len,
-                               long* naxes,
-                               const fs::path& filepath) {
+                                      int32_t& len,
+                                      long* naxes,
+                                      const fs::path& filepath) {
     try {
         int status = 0;
         int bitpix = LONG_IMG;
@@ -63,8 +50,8 @@ std::string Formatter::write_pix_file(int32_t** ccd,
         fitsfile* optr = file.get();
 
         fits_create_img(optr, bitpix, 0, NULL, &status);
-        for (int i = 0; i < _hdr_mapping.size(); i++) {
-            int idx = get_daq_segment_idx(_hdr_mapping[i]);
+        for (int i = 0; i < _data_segment.size(); i++) {
+            int idx = _data_segment[i];
             fits_create_img(optr, bitpix, num_axes, naxes, &status);
             fits_write_img(optr, TINT, first_elem, len, ccd[idx], &status);
         }
@@ -82,20 +69,6 @@ std::string Formatter::write_pix_file(int32_t** ccd,
     catch (L1::CfitsioError& e) {
         throw L1::CannotFormatFitsfile(e.what());
     }
-}
-
-int Formatter::get_daq_segment_idx(const std::string segment) {
-    auto iter = std::find(_daq_mapping.begin(), _daq_mapping.end(), segment);
-    if (iter == _daq_mapping.end()) {
-        std::ostringstream err;
-        err << "Cannot find segment number " << segment
-            << " inside DAQ Readout Pattern.";
-        LOG_CRT << err.str();
-        throw L1::CannotFormatFitsfile(err.str());
-    }
-
-    int idx = std::distance(_daq_mapping.begin(), iter);
-    return idx;
 }
 
 void Formatter::write(const std::string image,

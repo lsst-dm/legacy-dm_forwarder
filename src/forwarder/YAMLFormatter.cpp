@@ -41,8 +41,9 @@ std::vector<std::string> excluded_keywords {
     "GCOUNT"
 };
 
-YAMLFormatter::YAMLFormatter(const std::vector<std::string>& daq_mapping) {
-    _daq_mapping = daq_mapping;
+YAMLFormatter::YAMLFormatter(const std::vector<std::string>&
+        data_segment_name) :
+        _data_segment_name{data_segment_name} {
 }
 
 YAMLFormatter::~YAMLFormatter() {
@@ -212,9 +213,9 @@ void YAMLFormatter::write_header(const fs::path& pix_path,
         write_key(pix, x);
     }
 
-    for (int i = 0; i  < _daq_mapping.size(); i++) {
+    for (int i = 0; i  < _data_segment_name.size(); i++) {
         fits_movabs_hdu(pix, i+2, IMAGE_HDU, &status);
-        std::string segment_hdr = sensor + "_Segment" + _daq_mapping[i];
+        std::string segment_hdr = sensor + "_Segment" + _data_segment_name[i];
         YAML::Node segment = header_node[segment_hdr];
         if (!segment) {
             std::ostringstream err;

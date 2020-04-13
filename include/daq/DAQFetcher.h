@@ -26,23 +26,20 @@
 
 #include <vector>
 #include <boost/filesystem.hpp>
-#include <daq/Sensor.hh>
-#include <daq/Location.hh>
 #include <ims/Store.hh>
-#include "daq/Data.h"
-#include "daq/Pixel3d.h"
-#include "forwarder/Formatter.h"
+#include <daq/Data.h>
+#include <daq/Pixel3d.h>
+#include <forwarder/Formatter.h>
 
 class DAQFetcher {
     public:
         DAQFetcher(const std::string& partition,
                    const std::string& folder,
-                   std::vector<std::string> daq_mapping,
-                   std::vector<std::string> header_mapping);
+                   const std::vector<int>& data_segment,
+                   const int xor_pattern);
         void fetch(const boost::filesystem::path& prefix,
                    const std::string& image,
                    const std::string& location);
-        DAQ::Sensor::Type sensor(const DAQ::Location& location);
         Pixel3d declutter(std::vector<Data>& data,
                           uint64_t samples,
                           DAQ::Sensor::Type sensor);
@@ -51,6 +48,7 @@ class DAQFetcher {
     private:
         IMS::Store _store;
         std::string _folder;
+        int _xor;
         Formatter _fmt;
         boost::filesystem::path _prefix;
 };

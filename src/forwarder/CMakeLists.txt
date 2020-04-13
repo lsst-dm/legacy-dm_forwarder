@@ -6,7 +6,6 @@ set(OBJ
     "CURLHandle.cpp"
     "FileSender.cpp"
     "FitsOpener.cpp"
-    "FitsFormatter.cpp"
     "YAMLFormatter.cpp"
     "Formatter.cpp"
     "HeaderFetcher.cpp"
