@@ -32,13 +32,11 @@
 
 class Formatter {
     public:
-        Formatter(const std::vector<std::string>& daq_mapping,
-                  const std::vector<std::string>& hdr_mapping);
+        Formatter(const std::vector<int>& data_segment);
         std::string write_pix_file(int32_t**,
                                    int32_t&,
                                    long*,
                                    const boost::filesystem::path&);
-        int get_daq_segment_idx(const std::string segment);
         void write(const std::string image,
                    Pixel3d& ccds,
                    long* naxes,
@@ -46,8 +44,7 @@ class Formatter {
 
     protected:
         std::unique_ptr<RedisConnection> _db;
-        std::vector<std::string> _daq_mapping;
-        std::vector<std::string> _hdr_mapping;
+        std::vector<int> _data_segment;
 };
 
 class FitsFormatter : public Formatter {

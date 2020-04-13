@@ -25,11 +25,17 @@
 #define READOUT_PATTERN_H
 
 #include <yaml-cpp/yaml.h>
+#include <daq/Sensor.hh>
 
 class ReadoutPattern {
     public:
         ReadoutPattern(const YAML::Node& n);
-        std::vector<std::string> pattern(const std::string& sensor);
+        std::vector<std::string> data_segment_name(DAQ::Sensor::Type& sensor);
+        std::vector<int> data_segment(DAQ::Sensor::Type& sensor);
+        std::vector<int> sensor_order(DAQ::Sensor::Type& sensor);
+        int get_xor(DAQ::Sensor::Type& sensor);
+
+        static DAQ::Sensor::Type sensor(const std::string& location);
 
     private:
         YAML::Node _root;

@@ -5,10 +5,11 @@ project (lsst_iip_tests)
 set(OBJ
     "./core/RabbitConnectionTest.cpp"
     "./core/RedisConnectionTest.cpp"
-    "./daq/DAQFetcherTest.cpp"
-    "./daq/DataTest.cpp"
+    #"./daq/DAQFetcherTest.cpp"
+    #"./daq/DataTest.cpp"
     "./forwarder/miniforwarderTest.cpp"
     "./forwarder/YAMLFormatterTest.cpp"
+    "./forwarder/ReadoutPatternTest.cpp"
 )
 
 add_library(lsst_iip_tests SHARED ${OBJ})
@@ -31,8 +32,8 @@ target_include_directories(test_exe PRIVATE
 )
 target_link_libraries(test_exe PRIVATE
     lsst_iip_tests
-    lsst_dm_forwarder_daq
     lsst_dm_forwarder
+    lsst_dm_forwarder_daq
     lsst_iip_core
     ${daq_ims}
     ${daq_xds}
@@ -40,6 +41,7 @@ target_link_libraries(test_exe PRIVATE
     ${daq_dcs}
     ${daq_dsi}
     ${daq_rms}
+    ${daq_net}
     ${boost_log}
     ${boost_thread}
     ${boost_filesystem}

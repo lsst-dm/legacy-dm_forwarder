@@ -47,6 +47,7 @@ miniforwarder::miniforwarder(const std::string& config,
                                  , _readoutpattern(_config_root) {
     std::string work_dir, ip_host, redis_host, xfer_option;
     int redis_port, redis_db;
+    YAML::Node pattern;
     try {
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
@@ -58,10 +59,6 @@ miniforwarder::miniforwarder(const std::string& config,
         // DAQ configurations
         _partition = _config_root["PARTITION"].as<std::string>();
         _folder = _config_root["FOLDER"].as<std::string>();
-        _hdr_mapping = _config_root["HDR_MAPPING"]
-                .as<std::vector<std::string>>();
-        _daq_mapping = _config_root["DAQ_MAPPING"]
-                .as<std::vector<std::string>>();
 
         // Forwarder configurations
         _name = _config_root["NAME"].as<std::string>();
@@ -72,6 +69,9 @@ miniforwarder::miniforwarder(const std::string& config,
         _telemetry_q = _config_root["TELEMETRY_QUEUE"].as<std::string>();
         _seconds_to_update = _config_root["SECONDS_TO_UPDATE"].as<int>();
         _seconds_to_expire = _config_root["SECONDS_TO_EXPIRE"].as<int>();
+
+        // ReadoutPattern
+        pattern = _config_root["PATTERN"];
     }
     catch (YAML::TypedBadConversion<std::string>& e) {
         LOG_CRT << "YAML bad conversion for std::string";
@@ -138,6 +138,7 @@ miniforwarder::miniforwarder(const std::string& config,
     _db = std::unique_ptr<Scoreboard>(
             new Scoreboard("localhost", 6379, 0, redis_pwd));
     _sender = std::unique_ptr<FileSender>(new FileSender(xfer_option));
+    _pattern = std::unique_ptr<ReadoutPattern>(new ReadoutPattern(pattern));
 
     _forwarder_list = "forwarder_list";
     _association_key = "f99_association";
@@ -299,9 +300,14 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         std::vector<std::future<void>> tasks;
         std::vector<std::string> locations = _db->locations(image_id);
         for (auto&& location : locations) {
+            // get sensor type
+            DAQ::Sensor::Type sensor = _pattern->sensor(location);
+            std::vector<int> data_segment = _pattern->data_segment(sensor);
+            int xor_pattern = _pattern->get_xor(sensor);
+
             std::unique_ptr<DAQFetcher> daq = std::unique_ptr<DAQFetcher>(
-                    new DAQFetcher(_partition, _folder,
-                        _daq_mapping, _hdr_mapping));
+                    new DAQFetcher(_partition, _folder, data_segment,
+                        xor_pattern));
             std::future<void> job = std::async(std::launch::async,
                     &DAQFetcher::fetch,
                     std::move(daq),
@@ -461,8 +467,27 @@ void miniforwarder::format_with_header(std::vector<std::string>& ccds,
                                        const std::string header) {
     std::vector<std::future<void>> tasks;
     for (auto&& ccd : ccds) {
+        // find -R22S00.fits
+        size_t hyphen = ccd.find_last_of("-");
+        size_t dot = ccd.find_last_of(".");
+
+        if (hyphen == std::string::npos || dot == std::string::npos) {
+            std::ostringstream err;
+            err << "Extracting bay board from sensor " << ccd << " is invalid "
+                << "because filename does not conform to Image-R00S00.fits";
+            LOG_CRT << err.str();
+            throw L1::CannotFormatFitsfile(err.str());
+        }
+        std::string sensor_name = ccd.substr(hyphen+1, dot-hyphen-1);
+        std::string bay = sensor_name.substr(1, 2);
+        std::string board = sensor_name.substr(4, 1);
+        std::string bay_board = bay + "/" + board;
+
+        DAQ::Sensor::Type sensor = ReadoutPattern::sensor(bay_board);
+
+        std::vector<std::string> mapping = _pattern->data_segment_name(sensor);
         auto fmt = std::unique_ptr<YAMLFormatter>(
-                new YAMLFormatter(_daq_mapping));
+                new YAMLFormatter(mapping));
         std::future<void> job = std::async(
                 std::launch::async,
                 &YAMLFormatter::write_header,

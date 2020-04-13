@@ -1,7 +1,7 @@
 ARG=$1
 
 cd ../
-mkdir -p rpms && 
+mkdir -p rpms &&
 
 if [ "${ARG}" = "rmq" ]; then
     mkdir -p build/${ARG}

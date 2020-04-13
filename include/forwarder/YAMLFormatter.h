@@ -31,7 +31,7 @@
 
 class YAMLFormatter {
     public:
-        YAMLFormatter(const std::vector<std::string>& daq_mapping);
+        YAMLFormatter(const std::vector<std::string>& data_segment_name);
         ~YAMLFormatter();
 
         template <typename T>
@@ -43,7 +43,7 @@ class YAMLFormatter {
                           const boost::filesystem::path& header_path);
 
     private:
-        std::vector<std::string> _daq_mapping;
+        std::vector<std::string> _data_segment_name;
 };
 
 #endif
