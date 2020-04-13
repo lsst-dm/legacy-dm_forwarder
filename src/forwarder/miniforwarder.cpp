@@ -61,7 +61,7 @@ miniforwarder::miniforwarder(const std::string& config,
         _folder = _config_root["FOLDER"].as<std::string>();
 
         // Forwarder configurations
-        _name = _config_root["NAME"].as<std::string>();
+        set_name();
         _daq_locations = _config_root[_partition]
                 .as<std::vector<std::string>>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
@@ -555,33 +555,33 @@ fs::path miniforwarder::create_dir(const fs::path& file_path) {
     return file_path;
 }
 
-void miniforwarder::register_fwd() {
+void miniforwarder::set_name(){
     char hostname[HOST_NAME_MAX];
     gethostname(hostname, HOST_NAME_MAX);
 
-    struct addrinfo addr;
-    struct addrinfo *infoptr = NULL;
-    addr.ai_family = AF_INET;
-    // TODO: RAII
-    int response = getaddrinfo(hostname, NULL, NULL, &infoptr);
+    std::unique_ptr<struct addrinfo, decltype(&freeaddrinfo)> infoptr(nullptr, &freeaddrinfo);
+
+    addrinfo *temp;
+    int response = getaddrinfo(hostname, NULL, NULL, &temp);
+    infoptr.reset(temp);
     if (response) {
         LOG_CRT << "Cannot get hostname";
         throw L1::L1Exception("Cannot get hostname");
     }
 
-    struct addrinfo *p;
     char host[256];
-    std::string ip_addr;
-    for (p = infoptr; p != NULL; p = p->ai_next) {
-        getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof(host), NULL, 0,
+    
+    getnameinfo(infoptr->ai_addr, infoptr->ai_addrlen, host, sizeof(host), NULL, 0,
                 NI_NUMERICHOST);
-        ip_addr = host;
-        break;
-    }
-    freeaddrinfo(infoptr);
 
-    // set fowarder in archiver database
-    const std::string msg = _builder.build_fwd_info(hostname, ip_addr,
+    _hostname = hostname;
+    _ip_addr = host;
+    _name = static_cast<std::string>(host) + ":" + hostname;
+}
+
+void miniforwarder::register_fwd() {
+    // set forwarder in archiver database
+    const std::string msg = _builder.build_fwd_info(_hostname, _ip_addr,
             _consume_q);
 
     std::string redis_host = _hb_params.redis_host;
