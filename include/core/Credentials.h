@@ -74,6 +74,8 @@ class Credentials {
          */
         std::string get_passwd(const std::string& passwd_alias);
 
+        std::string get_redis_passwd();
+
     private:
         // Root node of secure file
         YAML::Node _credentials;

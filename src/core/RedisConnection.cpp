@@ -44,6 +44,29 @@ RedisConnection::RedisConnection(const std::string host,
     LOG_INF << "Made connection to redis " << host << " using db " << db;
 }
 
+RedisConnection::RedisConnection(const std::string host,
+                                 const int port,
+                                 const int db,
+                                 const std::string passwd) : _host(host) {
+    // Timeout of 2 seconds for connection handshake
+    const struct timeval tv{2, 0};
+
+    _context = redisConnectWithTimeout(host.c_str(), port, tv);
+    if (_context->err) {
+        LOG_CRT << _context->errstr;
+        throw L1::RedisError(_context->errstr);
+    }
+
+    std::vector<std::string> v{ "AUTH", passwd};
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
+
+    select(std::to_string(db));
+    exec();
+    LOG_INF << "Made connection to redis " << host << " using db " << db;
+}
+
 RedisConnection::~RedisConnection() {
     redisFree(_context);
 }

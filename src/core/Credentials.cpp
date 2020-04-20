@@ -91,8 +91,19 @@ std::string Credentials::get_passwd(const std::string& passwd_alias) {
         std::string passwd = _credentials["rabbitmq_users"][passwd_alias].as<std::string>();
         return passwd;
     }
+    catch (YAML::TypedBadConversion <std::string> &e) {
+        LOG_CRT << "Cannot read rabbitmq password from secure file";
+        exit(-1);
+    }
+}
+
+std::string Credentials::get_redis_passwd() {
+    try {
+        std::string passwd = _credentials["redis_passwd"].as<std::string>();
+        return passwd;
+    }
     catch (YAML::TypedBadConversion<std::string>& e) {
-	LOG_CRT << "Cannot read rabbitmq password from secure file";
-	exit(-1);
+    LOG_CRT << "Cannot read redis password from secure file";
+    exit(-1);
     }
 }
