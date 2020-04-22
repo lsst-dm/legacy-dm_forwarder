@@ -93,6 +93,7 @@ std::string Credentials::get_passwd(const std::string& passwd_alias) {
     }
     catch (YAML::TypedBadConversion <std::string> &e) {
         LOG_CRT << "Cannot read rabbitmq password from secure file";
+        std::cout << "Cannot read rabbitmq password from secure file" << std::endl;
         exit(-1);
     }
 }
@@ -104,6 +105,7 @@ std::string Credentials::get_redis_passwd() {
     }
     catch (YAML::TypedBadConversion<std::string>& e) {
         LOG_CRT << "Cannot read redis password from secure file";
+        std::cout << "Cannot read redis password from secure file"; << std::endl;
         exit(-1);
     }
 }

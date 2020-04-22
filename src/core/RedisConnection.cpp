@@ -57,10 +57,7 @@ RedisConnection::RedisConnection(const std::string host,
         throw L1::RedisError(_context->errstr);
     }
 
-    std::vector<std::string> v{ "AUTH", passwd};
-    RedisArg arg;
-    arg.arg = v;
-    _commands.push_back(arg);
+    auth(passwd);
 
     select(std::to_string(db));
     exec();
@@ -69,6 +66,13 @@ RedisConnection::RedisConnection(const std::string host,
 
 RedisConnection::~RedisConnection() {
     redisFree(_context);
+}
+
+void RedisConnection::auth(const std::string passwd){
+    std::vector<std::string> v{ "AUTH", passwd };
+    RedisArg arg;
+    arg.arg = v;
+    _commands.push_back(arg);
 }
 
 void RedisConnection::select(const std::string index) {
