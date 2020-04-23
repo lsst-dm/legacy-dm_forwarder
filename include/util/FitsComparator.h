@@ -32,7 +32,7 @@
 
 class FitsComparator{
     public:
-       FitsComparator(std::string fitsfile1, std::string fitsfile2);
+        FitsComparator(std::string fitsfile1, std::string fitsfile2);
 
         ~FitsComparator();
 
