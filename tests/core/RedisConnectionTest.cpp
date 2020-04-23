@@ -29,11 +29,13 @@
 #include <core/IIPBase.h>
 #include <core/Exceptions.h>
 #include <core/RedisConnection.h>
+#include <cstdlib>
 
 struct RedisConnectionFixture : IIPBase {
 
     std::string _log_dir;
     std::string _host;
+    std::string _passwd;
     int _port, _db;
     std::unique_ptr<RedisConnection> _redis;
 
@@ -44,6 +46,7 @@ struct RedisConnectionFixture : IIPBase {
         _host = _config_root["REDIS_HOST"].as<std::string>();
         _port = _config_root["REDIS_PORT"].as<int>();
         _db = _config_root["REDIS_DB"].as<int>();
+        _passwd = _credentials->get_redis_passwd();
 
         _redis = std::unique_ptr<RedisConnection>(new RedisConnection(
                     _host, _port, _db));
@@ -72,6 +75,28 @@ BOOST_AUTO_TEST_CASE(constructor) {
 
     // bad database
     BOOST_CHECK_THROW(RedisConnection r(_host, _port, 25), L1::RedisError);
+}
+
+BOOST_AUTO_TEST_CASE(constructor_with_pass) {
+        std::string cmd = "redis-cli config set requirepass " + _passwd;
+        system(cmd.c_str());
+        // good
+        BOOST_CHECK_NO_THROW(RedisConnection r(_host, _port, _db, _passwd));
+
+        // bad host
+        BOOST_CHECK_THROW(RedisConnection r("host1", _port, _db, _passwd), L1::RedisError);
+
+        // bad port
+        BOOST_CHECK_THROW(RedisConnection r(_host, 637, _db, _passwd), L1::RedisError);
+
+        // bad database
+        BOOST_CHECK_THROW(RedisConnection r(_host, _port, 25, _passwd), L1::RedisError);
+
+        // bad password
+        BOOST_CHECK_THROW(RedisConnection r(_host, _port, _db, "badpass"), L1::RedisError);
+
+        cmd = "redis-cli -a " + _passwd + " config set requirepass \"\" ";
+        system(cmd.c_str());
 }
 
 BOOST_AUTO_TEST_CASE(select) {

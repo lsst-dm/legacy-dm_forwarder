@@ -74,6 +74,16 @@ class Credentials {
          */
         std::string get_passwd(const std::string& passwd_alias);
 
+        /**
+        * Get Redis password from secure file
+        *
+        * @return Redis password
+        *
+        * @throws No exception thrown but application will `exit` if
+        *      password is unable to be read from secure file
+        */
+        std::string get_redis_passwd();
+
     private:
         // Root node of secure file
         YAML::Node _credentials;

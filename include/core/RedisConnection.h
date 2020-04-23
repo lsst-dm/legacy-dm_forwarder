@@ -45,7 +45,12 @@ class RedisConnection {
         RedisConnection(const std::string host,
                         const int port,
                         const int db);
+        RedisConnection(const std::string host,
+                        const int port,
+                        const int db,
+                        const std::string passwd);
         ~RedisConnection();
+        void auth(const std::string passwd);
         void select(const std::string index);
         void lpush(const std::string key,
                    std::vector<std::string> values);
