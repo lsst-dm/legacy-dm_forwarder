@@ -61,7 +61,7 @@ miniforwarder::miniforwarder(const std::string& config,
         _folder = _config_root["FOLDER"].as<std::string>();
 
         // Forwarder configurations
-        set_name();
+        _name = get_name();
         _daq_locations = _config_root[_partition]
                 .as<std::vector<std::string>>();
         _consume_q = _config_root["CONSUME_QUEUE"].as<std::string>();
@@ -555,7 +555,7 @@ fs::path miniforwarder::create_dir(const fs::path& file_path) {
     return file_path;
 }
 
-void miniforwarder::set_name(){
+std::string miniforwarder::get_name(){
     char hostname[HOST_NAME_MAX];
     gethostname(hostname, HOST_NAME_MAX);
 
@@ -576,7 +576,7 @@ void miniforwarder::set_name(){
 
     _hostname = hostname;
     _ip_addr = host;
-    _name = static_cast<std::string>(host) + ":" + hostname;
+    return static_cast<std::string>(host) + ":" + hostname;
 }
 
 void miniforwarder::register_fwd() {

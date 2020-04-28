@@ -86,7 +86,7 @@ class miniforwarder : public IIPBase {
                 const std::string& desc);
         boost::filesystem::path create_dir(const boost::filesystem::path&);
         bool check_valid_board(const std::vector<std::string>& locs);
-        void set_name();
+        std::string get_name();
         void register_fwd();
 
     private:
