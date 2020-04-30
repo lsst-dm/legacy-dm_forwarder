@@ -32,7 +32,7 @@
 
 class Formatter {
     public:
-        Formatter(const std::vector<int>& data_segment);
+        Formatter(const std::vector<int>& data_segment, redis_connection_params params);
         std::string write_pix_file(int32_t**,
                                    int32_t&,
                                    long*,
@@ -50,7 +50,8 @@ class Formatter {
 class FitsFormatter : public Formatter {
     public:
         FitsFormatter(const std::vector<std::string>& daq_mapping,
-                      const std::vector<std::string>& hdr_mapping);
+                      const std::vector<std::string>& hdr_mapping,
+                      redis_connection_params params);
         void write_header(const boost::filesystem::path& pix_path,
                           const boost::filesystem::path& header_path);
         bool contains_excluded_key(const char*);

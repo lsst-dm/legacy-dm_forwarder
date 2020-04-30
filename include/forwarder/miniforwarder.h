@@ -106,6 +106,7 @@ class miniforwarder : public IIPBase {
         int _seconds_to_expire;
         heartbeat_params _hb_params;
         Info::MODE _mode;
+        redis_connection_params _redis_params;
 
         boost::filesystem::path _header_path;
         boost::filesystem::path _fits_path;

@@ -37,19 +37,20 @@ struct RedisConnectionFixture : IIPBase {
     std::string _host;
     std::string _passwd;
     int _port, _db;
+    redis_connection_params _params;
     std::unique_ptr<RedisConnection> _redis;
 
     RedisConnectionFixture() : IIPBase("ForwarderCfg.yaml", "test"){
         BOOST_TEST_MESSAGE("Setup RedisConnectionTest fixture");
         _log_dir = _config_root["LOGGING_DIR"].as<std::string>();
 
-        _host = _config_root["REDIS_HOST"].as<std::string>();
-        _port = _config_root["REDIS_PORT"].as<int>();
-        _db = _config_root["REDIS_DB"].as<int>();
-        _passwd = _credentials->get_redis_passwd();
+        _params.host = _host = _config_root["REDIS"]["LOCAL"]["HOST"].as<std::string>();
+        _params.port = _port = _config_root["REDIS"]["LOCAL"]["PORT"].as<int>();
+        _params.db = _db = _config_root["REDIS"]["LOCAL"]["DB"].as<int>();
+        _params.passwd = _passwd = _credentials->get_redis_passwd();
 
         _redis = std::unique_ptr<RedisConnection>(new RedisConnection(
-                    _host, _port, _db));
+                    _host, _port, _db, _passwd));
         _redis->flushdb();
     }
 
@@ -63,6 +64,8 @@ struct RedisConnectionFixture : IIPBase {
 BOOST_FIXTURE_TEST_SUITE(RedisConnectionTest, RedisConnectionFixture);
 
 BOOST_AUTO_TEST_CASE(constructor) {
+    std::string cmd = "redis-cli -a " + _passwd + " config set requirepass \"\" ";
+    system(cmd.c_str());
 
     // good
     BOOST_CHECK_NO_THROW(RedisConnection r(_host, _port, _db));
@@ -75,13 +78,17 @@ BOOST_AUTO_TEST_CASE(constructor) {
 
     // bad database
     BOOST_CHECK_THROW(RedisConnection r(_host, _port, 25), L1::RedisError);
+
+    cmd = "redis-cli config set requirepass " + _passwd;
+    system(cmd.c_str());
 }
 
 BOOST_AUTO_TEST_CASE(constructor_with_pass) {
-        std::string cmd = "redis-cli config set requirepass " + _passwd;
-        system(cmd.c_str());
         // good
         BOOST_CHECK_NO_THROW(RedisConnection r(_host, _port, _db, _passwd));
+
+        // good
+        BOOST_CHECK_NO_THROW(RedisConnection r(_params));
 
         // bad host
         BOOST_CHECK_THROW(RedisConnection r("host1", _port, _db, _passwd), L1::RedisError);
@@ -94,9 +101,6 @@ BOOST_AUTO_TEST_CASE(constructor_with_pass) {
 
         // bad password
         BOOST_CHECK_THROW(RedisConnection r(_host, _port, _db, "badpass"), L1::RedisError);
-
-        cmd = "redis-cli -a " + _passwd + " config set requirepass \"\" ";
-        system(cmd.c_str());
 }
 
 BOOST_AUTO_TEST_CASE(select) {

@@ -36,12 +36,13 @@ namespace fs = boost::filesystem;
 DAQFetcher::DAQFetcher(const std::string& partition,
                        const std::string& folder,
                        const std::vector<int>& data_segment,
+                       redis_connection_params params,
                        const int xor_pattern) :
         _folder{folder},
         // Bug: Invalid partition name segfaults from DAQ
         _store(partition.c_str()),
         _xor{xor_pattern},
-        _fmt(data_segment) {
+        _fmt(data_segment, params) {
 }
 
 void DAQFetcher::fetch(const fs::path& prefix,

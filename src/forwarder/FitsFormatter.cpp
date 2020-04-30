@@ -39,8 +39,9 @@ std::vector<std::string> excluded_keywords {
 };
 
 FitsFormatter::FitsFormatter(const std::vector<std::string>& daq_mapping,
-                             const std::vector<std::string>& hdr_mapping)
-    : Formatter(daq_mapping, hdr_mapping) {
+                             const std::vector<std::string>& hdr_mapping,
+                             redis_connection_params params)
+    : Formatter(daq_mapping, hdr_mapping, params) {
 }
 
 void FitsFormatter::write_header(const fs::path& pix_path,

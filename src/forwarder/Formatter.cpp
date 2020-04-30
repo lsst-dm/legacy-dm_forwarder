@@ -30,10 +30,11 @@
 
 namespace fs = boost::filesystem;
 
-Formatter::Formatter(const std::vector<int>& data_segment) :
+Formatter::Formatter(const std::vector<int>& data_segment, 
+                     redis_connection_params params) :
         _data_segment{data_segment} {
     _db = std::unique_ptr<RedisConnection>(
-            new RedisConnection("localhost", 6379, 0));
+            new RedisConnection(params.host, params.port, params.db));
 }
 
 std::string Formatter::write_pix_file(int32_t** ccd,

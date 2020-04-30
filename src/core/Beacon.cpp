@@ -41,9 +41,9 @@ void Beacon::clear() {
 }
 
 void Beacon::ping(const heartbeat_params& params) {
-    const std::string host = params.redis_host;
-    const int port = params.redis_port;
-    const int db = params.redis_db;
+    const std::string host = params.redis_params.host;
+    const int port = params.redis_params.port;
+    const int db = params.redis_params.db;
 
     const std::string key = params.key;
     const int seconds_to_expire = params.seconds_to_expire;
