@@ -86,7 +86,6 @@ foreach(x ${daq_libs})
         name lib${x}.so
         HINTS
             "${Daq_LIBRARY_DIRS}"
-            "/usr/lib64/daq"
     )
 endforeach()
 
@@ -96,6 +95,7 @@ set(boost_libs
     "boost_system"
     "boost_thread"
     "boost_unit_test_framework"
+    "boost_program_options"
 )
 foreach(x ${boost_libs})
     find_library(
@@ -120,6 +120,7 @@ else()
     add_subdirectory("./src/core")
     add_subdirectory(${Daq_SRC_DIR})
     add_subdirectory("./src/forwarder")
+    add_subdirectory("./src/util")
     if(TEST)
         add_subdirectory("./tests")
     endif()

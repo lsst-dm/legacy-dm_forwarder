@@ -28,7 +28,7 @@ RUN curl -L -o cmake.sh ${cmakeURL} && \
 RUN git clone ${bbcpURL} bbcp && \
     cd bbcp/src && \
     make && \
-    cp /bbcp/bin/amd64_linux31/bbcp /usr/bin
+    cp /bbcp/bin/amd64_linux/bbcp /usr/bin
 
 # rabbitmq-c
 RUN mkdir rabbitmqc && cd rabbitmqc && \
