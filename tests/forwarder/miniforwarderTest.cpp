@@ -22,6 +22,7 @@
  */
 
 #include <stdlib.h> // setenv
+#include <string.h>
 #include <thread>
 #include <chrono>
 #include <memory>
@@ -115,6 +116,27 @@ BOOST_FIXTURE_TEST_SUITE(miniforwarderTest, miniforwarderFixture);
 
 BOOST_AUTO_TEST_CASE(on_message) {
 
+}
+
+BOOST_AUTO_TEST_CASE(set_name) {
+    std::array<char, 128> buffer, buffer2;
+    std::string result, result2;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("hostname", "r"), pclose),
+    pipe2(popen("hostname --ip-address | awk '{print $1}'", "r"), pclose);
+
+    fgets(buffer.data(), buffer.size(), pipe.get());
+    int len = strlen(buffer.data());
+    buffer[len-1] = '\0';
+    result += buffer.data();
+
+    fgets(buffer2.data(), buffer2.size(), pipe2.get());
+
+    len = strlen(buffer2.data());
+    buffer2[len-1] = '\0';
+    result2 += buffer2.data();
+
+    std::string name = result + ":" + result2;
+    BOOST_CHECK_EQUAL(name, _fwd->get_name());
 }
 
 BOOST_AUTO_TEST_CASE(run) {
