@@ -9,6 +9,7 @@ set(OBJ
     "YAMLFormatter.cpp"
     "Formatter.cpp"
     "HeaderFetcher.cpp"
+    "Info.cpp"
     "MessageBuilder.cpp"
     "miniforwarder.cpp"
     "ReadoutPattern.cpp"

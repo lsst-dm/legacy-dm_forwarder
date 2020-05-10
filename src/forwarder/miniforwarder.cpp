@@ -72,6 +72,15 @@ miniforwarder::miniforwarder(const std::string& config,
 
         // ReadoutPattern
         pattern = _config_root["PATTERN"];
+
+        // mode
+        std::string mode_str = _config_root["MODE"].as<std::string>();
+        _mode = Info::encode(mode_str);
+
+        if (_mode == Info::MODE::UNDEFINED) {
+            LOG_WRN << "Forwarder mode seems to be wrong. " << mode_str
+                    << " mode is not defined.";
+        }
     }
     catch (YAML::TypedBadConversion<std::string>& e) {
         LOG_CRT << "YAML bad conversion for std::string";
@@ -276,25 +285,27 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         return;
     }
 
-    LOG_DBG << "IMS::Image blocking for image " << image_id;
-    IMS::Image image(*_store, *_stream, TIMEOUT);
-    LOG_DBG << "Acquired image " << image_id;
+    if (_mode == Info::MODE::LIVE) {
+        LOG_DBG << "IMS::Image blocking for image " << image_id;
+        IMS::Image image(*_store, *_stream, TIMEOUT);
+        LOG_DBG << "Acquired image " << image_id;
 
-    IMS::ImageMetadata meta = image.metadata();
-    std::string name = std::string(meta.name());
-    std::string folder = std::string(meta.folder());
+        IMS::ImageMetadata meta = image.metadata();
+        std::string name = std::string(meta.name());
+        std::string folder = std::string(meta.folder());
 
-    if (name != image_id || folder != _folder) {
-        LOG_CRT << "Currently streaming image " << name << " in " << folder
-            << " is not what is being expected " << image_id << " from "
-            << _folder;
-        return;
+        if (name != image_id || folder != _folder) {
+            LOG_CRT << "Currently streaming image " << name << " in " << folder
+                    << " is not what is being expected " << image_id << " from "
+                    << _folder;
+            return;
+        }
+
+        LOG_DBG << "Barrier blocking for image " << image_id;
+        IMS::Barrier barrier(image);
+        barrier.block();
+        LOG_DBG << "Barrier released for image " << image_id;
     }
-
-    LOG_DBG << "Barrier blocking for image " << image_id;
-    IMS::Barrier barrier(image);
-    barrier.block();
-    LOG_DBG << "Barrier released for image " << image_id;
 
     try {
         std::vector<std::future<void>> tasks;

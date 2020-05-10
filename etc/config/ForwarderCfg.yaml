@@ -13,6 +13,9 @@ WORK_DIR: /var/tmp/data
 PARTITION: cam-comcam
 FOLDER: raw
 
+# forwarder mode [live|catchup]
+MODE: live
+
 # LCA-13501 segment order
 PATTERN:
     DATA_SEGMENT_NAME:

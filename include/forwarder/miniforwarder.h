@@ -42,6 +42,7 @@
 #include <forwarder/Formatter.h>
 #include <forwarder/FileSender.h>
 #include <forwarder/ReadoutPattern.h>
+#include <forwarder/Info.h>
 #include <daq/DAQFetcher.h>
 
 class miniforwarder : public IIPBase {
@@ -104,6 +105,7 @@ class miniforwarder : public IIPBase {
         int _seconds_to_update;
         int _seconds_to_expire;
         heartbeat_params _hb_params;
+        Info::MODE _mode;
 
         boost::filesystem::path _header_path;
         boost::filesystem::path _fits_path;
