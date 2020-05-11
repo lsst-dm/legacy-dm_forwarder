@@ -59,7 +59,8 @@ void DAQFetcher::fetch(const fs::path& prefix,
     IMS::Image img(id, _store);
     if (!img) {
         std::ostringstream err;
-        err << "Cannot create IMS::Image for " << image;
+        err << "Cannot create IMS::Image for " << image << " at location "
+            << location;
         LOG_CRT << err.str();
         throw L1::CannotFetchPixel(err.str());
     }

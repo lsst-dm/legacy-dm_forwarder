@@ -105,7 +105,7 @@ std::string Credentials::get_redis_passwd() {
     }
     catch (YAML::TypedBadConversion<std::string>& e) {
         LOG_CRT << "Cannot read redis password from secure file";
-        std::cout << "Cannot read redis password from secure file"; << std::endl;
+        std::cout << "Cannot read redis password from secure file" << std::endl;
         exit(-1);
     }
 }
