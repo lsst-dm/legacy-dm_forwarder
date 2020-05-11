@@ -49,8 +49,8 @@ set(Daq_VERSION 4.2.3)
 set(Daq_URL "${LSST_REPO}/daq/R4-V2.3.tgz")
 set(Daq_DIR "/srv/nfs/lsst-daq/daq-sdk/current")
 set(Daq_RPM_DIR "/opt/lsst/daq")
-set(Daq_INCLUDE_DIRS ${Daq_DIR}/include)
-set(Daq_LIBRARY_DIRS ${Daq_DIR}/x86/lib)
+set(Daq_INCLUDE_DIRS ${Daq_RPM_DIR}/include)
+set(Daq_LIBRARY_DIRS ${Daq_RPM_DIR}/lib)
 
 # rabbitmq-c
 set(Rabbitmq-C_VERSION 0.10.0)
@@ -167,6 +167,13 @@ set(CPACK_RPM_CFITSIO_FILE_NAME "lsst-libcfitsio-${Cfitsio_VERSION}-x86_64.rpm")
 set(CPACK_RPM_CFITSIO_PACKAGE_NAME "lsst-libcfitsio")
 
 # dm_forwarder config
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+    /etc/systemd
+    /etc/systemd/system
+    /opt
+)
+set(CPACK_PACKAGE_RELOCATABLE OFF)
+set(CPACK_RPM_PACKAGE_RELOCATABLE OFF)
 set(CPACK_RPM_DM_FORWARDER_FILE_NAME
     "lsst-dm_forwarder-${GIT_VERSION}-x86_64.rpm")
 set(CPACK_RPM_DM_FORWARDER_PACKAGE_NAME "lsst-dm_forwarder")

@@ -68,6 +68,6 @@ install(
 
 install(
     FILES ${CMAKE_SOURCE_DIR}/etc/services/dm_forwarder.service
-    DESTINATION /etc/systemd/system
+    DESTINATION /etc/systemd/system/
     COMPONENT dm_forwarder
 )

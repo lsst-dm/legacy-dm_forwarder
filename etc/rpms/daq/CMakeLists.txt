@@ -14,8 +14,15 @@ ExternalProject_Add(
 ExternalProject_Get_property(${PROJECT_NAME} SOURCE_DIR)
 
 install(
-    DIRECTORY ${SOURCE_DIR}/x86/
-    DESTINATION /opt/lsst/daq/x86
+    DIRECTORY ${SOURCE_DIR}/x86/bin/
+    DESTINATION /opt/lsst/daq/bin
+    COMPONENT daq
+    USE_SOURCE_PERMISSIONS
+)
+
+install(
+    DIRECTORY ${SOURCE_DIR}/x86/lib/
+    DESTINATION /opt/lsst/daq/lib
     COMPONENT daq
     USE_SOURCE_PERMISSIONS
 )
