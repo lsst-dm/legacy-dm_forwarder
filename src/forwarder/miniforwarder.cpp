@@ -45,15 +45,18 @@ miniforwarder::miniforwarder(const std::string& config,
                              const std::string& log) : IIPBase(config, log)
                                  , _hdr()
                                  , _readoutpattern(_config_root) {
-    std::string work_dir, ip_host, redis_host, xfer_option;
-    int redis_port, redis_db;
+    std::string work_dir, ip_host, redis_host_remote, redis_host_local, xfer_option;
+    int redis_port_remote, redis_db_remote, redis_port_local, redis_db_local;
     YAML::Node pattern;
     try {
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
-        redis_host = _config_root["REDIS_HOST"].as<std::string>();
-        redis_port = _config_root["REDIS_PORT"].as<int>();
-        redis_db = _config_root["REDIS_DB"].as<int>();
+        redis_host_remote = _config_root["REDIS"]["REMOTE"]["HOST"].as<std::string>();
+        redis_port_remote = _config_root["REDIS"]["REMOTE"]["PORT"].as<int>();
+        redis_db_remote = _config_root["REDIS"]["REMOTE"]["DB"].as<int>();
+        redis_host_local = _config_root["REDIS"]["LOCAL"]["HOST"].as<std::string>();
+        redis_port_local = _config_root["REDIS"]["LOCAL"]["PORT"].as<int>();
+        redis_db_local = _config_root["REDIS"]["LOCAL"]["DB"].as<int>();
         xfer_option = _config_root["XFER_OPTION"].as<std::string>();
 
         // DAQ configurations
@@ -109,8 +112,12 @@ miniforwarder::miniforwarder(const std::string& config,
         exit(EXIT_FAILURE);
     }
 
-    // TODO
+    // const std::string redis_pwd = _credentials -> get_redis_passwd();
     const std::string redis_pwd = "meh";
+    _redis_params.host = redis_host_local;
+    _redis_params.port = redis_port_local;
+    _redis_params.db = redis_db_local;
+    _redis_params.passwd = redis_pwd;
 
     _actions = {
         { "AT_FWDR_HEALTH_CHECK", std::bind(&miniforwarder::health_check,
@@ -144,8 +151,8 @@ miniforwarder::miniforwarder(const std::string& config,
         exit(EXIT_FAILURE);
     }
 
-    _db = std::unique_ptr<Scoreboard>(
-            new Scoreboard("localhost", 6379, 0, redis_pwd));
+    _db = std::unique_ptr<Scoreboard>(new Scoreboard(redis_host_local, 
+                redis_port_local, redis_db_local, redis_pwd));
     _sender = std::unique_ptr<FileSender>(new FileSender(xfer_option));
     _pattern = std::unique_ptr<ReadoutPattern>(new ReadoutPattern(pattern));
 
@@ -156,9 +163,9 @@ miniforwarder::miniforwarder(const std::string& config,
     _hb_params.seconds_to_expire = _seconds_to_expire;
     _hb_params.seconds_to_update = _seconds_to_update;
     _hb_params.key = _association_key;
-    _hb_params.redis_host = redis_host;
-    _hb_params.redis_port = redis_port;
-    _hb_params.redis_db = redis_db;
+    _hb_params.redis_params.host = redis_host_remote;
+    _hb_params.redis_params.port = redis_port_remote;
+    _hb_params.redis_params.db = redis_db_remote;
     _hb_params.action = bound_register_fwd;
 
     register_fwd();
@@ -318,7 +325,7 @@ void miniforwarder::end_readout(const YAML::Node& n) {
 
             std::unique_ptr<DAQFetcher> daq = std::unique_ptr<DAQFetcher>(
                     new DAQFetcher(_partition, _folder, data_segment,
-                        xor_pattern));
+                        _redis_params, xor_pattern));
             std::future<void> job = std::async(std::launch::async,
                     &DAQFetcher::fetch,
                     std::move(daq),
@@ -595,9 +602,9 @@ void miniforwarder::register_fwd() {
     const std::string msg = _builder.build_fwd_info(_hostname, _ip_addr,
             _consume_q);
 
-    std::string redis_host = _hb_params.redis_host;
-    int port = _hb_params.redis_port;
-    int db = _hb_params.redis_db;
+    std::string redis_host = _hb_params.redis_params.host;
+    int port = _hb_params.redis_params.port;
+    int db = _hb_params.redis_params.db;
 
     try {
         RedisConnection con(redis_host, port, db);

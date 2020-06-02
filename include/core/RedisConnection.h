@@ -40,6 +40,13 @@
  * Note: redisContext is not thread-safe.
  */
 
+struct redis_connection_params {
+    std::string host;
+    int port;
+    int db;
+    std::string passwd;
+};
+
 class RedisConnection {
     public:
         RedisConnection(const std::string host,
@@ -49,6 +56,7 @@ class RedisConnection {
                         const int port,
                         const int db,
                         const std::string passwd);
+        RedisConnection(redis_connection_params params);
         ~RedisConnection();
         void auth(const std::string passwd);
         void select(const std::string index);

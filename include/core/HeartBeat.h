@@ -28,12 +28,10 @@
 #include <functional>
 #include <mutex>
 #include <condition_variable>
+#include <core/RedisConnection.h>
 
 struct heartbeat_params {
-    std::string redis_host;
-    int redis_port;
-    int redis_db;
-
+    redis_connection_params redis_params;
     std::string key;
     int seconds_to_expire;
     int seconds_to_update;

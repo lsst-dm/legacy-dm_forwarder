@@ -36,6 +36,7 @@ class DAQFetcher {
         DAQFetcher(const std::string& partition,
                    const std::string& folder,
                    const std::vector<int>& data_segment,
+                   redis_connection_params params,
                    const int xor_pattern);
         void fetch(const boost::filesystem::path& prefix,
                    const std::string& image,
