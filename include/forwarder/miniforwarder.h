@@ -29,9 +29,6 @@
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include <ims/Stream.hh>
-#include <ims/Store.hh>
-
 #include <core/IIPBase.h>
 #include <core/SimplePublisher.h>
 #include <core/HeartBeat.h>
@@ -43,6 +40,7 @@
 #include <forwarder/FileSender.h>
 #include <forwarder/ReadoutPattern.h>
 #include <forwarder/Info.h>
+#include <daq/Notification.h>
 #include <daq/DAQFetcher.h>
 
 class miniforwarder : public IIPBase {
@@ -120,8 +118,7 @@ class miniforwarder : public IIPBase {
         std::unique_ptr<Watcher> _watcher;
         std::unique_ptr<Beacon> _beacon;
         std::unique_ptr<FileSender> _sender;
-        std::unique_ptr<IMS::Store> _store;
-        std::unique_ptr<IMS::Stream> _stream;
+        std::unique_ptr<Notification> _notification;
         std::unique_ptr<ReadoutPattern> _pattern;
 
         MessageBuilder _builder;
