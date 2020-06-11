@@ -26,10 +26,6 @@
 #include <netdb.h>
 #include <future>
 
-#include <ims/Image.hh>
-#include <ims/ImageMetadata.hh>
-#include <ims/Barrier.hh>
-
 #include <core/Exceptions.h>
 #include <core/Consumer.h>
 #include <core/SimpleLogger.h>
@@ -45,16 +41,19 @@ miniforwarder::miniforwarder(const std::string& config,
                              const std::string& log) : IIPBase(config, log)
                                  , _hdr()
                                  , _readoutpattern(_config_root) {
-    std::string work_dir, ip_host, redis_host_remote, redis_host_local, xfer_option;
+    std::string work_dir, ip_host, redis_host_remote,
+            redis_host_local, xfer_option;
     int redis_port_remote, redis_db_remote, redis_port_local, redis_db_local;
     YAML::Node pattern;
     try {
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
-        redis_host_remote = _config_root["REDIS"]["REMOTE"]["HOST"].as<std::string>();
+        redis_host_remote = _config_root["REDIS"]["REMOTE"]["HOST"]
+                .as<std::string>();
         redis_port_remote = _config_root["REDIS"]["REMOTE"]["PORT"].as<int>();
         redis_db_remote = _config_root["REDIS"]["REMOTE"]["DB"].as<int>();
-        redis_host_local = _config_root["REDIS"]["LOCAL"]["HOST"].as<std::string>();
+        redis_host_local = _config_root["REDIS"]["LOCAL"]["HOST"]
+                .as<std::string>();
         redis_port_local = _config_root["REDIS"]["LOCAL"]["PORT"].as<int>();
         redis_db_local = _config_root["REDIS"]["LOCAL"]["DB"].as<int>();
         xfer_option = _config_root["XFER_OPTION"].as<std::string>();
@@ -151,7 +150,7 @@ miniforwarder::miniforwarder(const std::string& config,
         exit(EXIT_FAILURE);
     }
 
-    _db = std::unique_ptr<Scoreboard>(new Scoreboard(redis_host_local, 
+    _db = std::unique_ptr<Scoreboard>(new Scoreboard(redis_host_local,
                 redis_port_local, redis_db_local, redis_pwd));
     _sender = std::unique_ptr<FileSender>(new FileSender(xfer_option));
     _pattern = std::unique_ptr<ReadoutPattern>(new ReadoutPattern(pattern));
@@ -173,8 +172,8 @@ miniforwarder::miniforwarder(const std::string& config,
     _beacon = std::unique_ptr<Beacon>(new Beacon(_hb_params));
     _watcher = std::unique_ptr<Watcher>(new Watcher());
 
-    _store = std::unique_ptr<IMS::Store>(new IMS::Store(_partition.c_str()));
-    _stream = std::unique_ptr<IMS::Stream>(new IMS::Stream(*_store, TIMEOUT));
+    _notification = std::unique_ptr<Notification>(
+            new Notification(_partition.c_str()));
 }
 
 miniforwarder::~miniforwarder() {
@@ -292,27 +291,7 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         return;
     }
 
-    if (_mode == Info::MODE::LIVE) {
-        LOG_DBG << "IMS::Image blocking for image " << image_id;
-        IMS::Image image(*_store, *_stream, TIMEOUT);
-        LOG_DBG << "Acquired image " << image_id;
-
-        IMS::ImageMetadata meta = image.metadata();
-        std::string name = std::string(meta.name());
-        std::string folder = std::string(meta.folder());
-
-        if (name != image_id || folder != _folder) {
-            LOG_CRT << "Currently streaming image " << name << " in " << folder
-                    << " is not what is being expected " << image_id << " from "
-                    << _folder;
-            return;
-        }
-
-        LOG_DBG << "Barrier blocking for image " << image_id;
-        IMS::Barrier barrier(image);
-        barrier.block();
-        LOG_DBG << "Barrier released for image " << image_id;
-    }
+    _notification->block(_mode, image_id, _folder);
 
     try {
         std::vector<std::future<void>> tasks;
@@ -382,6 +361,9 @@ void miniforwarder::associated(const YAML::Node& n) {
         heartbeat_params params = _hb_params;
         params.key = key;
         _watcher->start(params);
+
+        // start DAQ stream
+        _notification->start();
     }
     catch(std::exception& e) {
         LOG_CRT << e.what();
@@ -577,7 +559,8 @@ std::string miniforwarder::get_name(){
     char hostname[HOST_NAME_MAX];
     gethostname(hostname, HOST_NAME_MAX);
 
-    std::unique_ptr<struct addrinfo, decltype(&freeaddrinfo)> infoptr(nullptr, &freeaddrinfo);
+    std::unique_ptr<struct addrinfo, decltype(&freeaddrinfo)> infoptr(nullptr,
+            &freeaddrinfo);
 
     addrinfo *temp;
     int response = getaddrinfo(hostname, NULL, NULL, &temp);
@@ -588,9 +571,9 @@ std::string miniforwarder::get_name(){
     }
 
     char host[256];
-    
-    getnameinfo(infoptr->ai_addr, infoptr->ai_addrlen, host, sizeof(host), NULL, 0,
-                NI_NUMERICHOST);
+
+    getnameinfo(infoptr->ai_addr, infoptr->ai_addrlen, host, sizeof(host),
+            NULL, 0, NI_NUMERICHOST);
 
     _hostname = hostname;
     _ip_addr = host;

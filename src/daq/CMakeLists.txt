@@ -13,6 +13,7 @@ set(OBJ
     "Pixel3d.cpp"
     "DAQDecoder.cpp"
     "DAQFetcher.cpp"
+    "Notification.cpp"
     "../forwarder/Formatter.cpp"
 )
 

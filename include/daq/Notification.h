@@ -21,20 +21,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_H
-#define INFO_H
+#ifndef NOTIFICATION_H
+#define NOTIFICATION_H
 
-#include <string>
+#include <memory>
+#include <ims/Stream.hh>
+#include <ims/Store.hh>
+#include <forwarder/Info.h>
 
-class Info { 
+class Notification {
     public:
-        enum class MODE { 
-            LIVE,
-            CATCHUP,
-            UNDEFINED
-        };
+        Notification(const std::string partition);
+        void start();
+        void block(Info::MODE mode,
+                   const std::string image_id,
+                   const std::string folder);
 
-        static MODE encode(std::string);
+    private:
+        std::unique_ptr<IMS::Store> _store;
+        std::unique_ptr<IMS::Stream> _stream;
 };
 
 #endif
