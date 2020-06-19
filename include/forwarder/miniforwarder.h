@@ -58,6 +58,7 @@ class miniforwarder : public IIPBase {
         void end_readout(const YAML::Node&);
         void process_ack(const YAML::Node&);
         void associated(const YAML::Node&);
+        void scan(const YAML::Node&);
 
         void assemble(const std::string&);
         void format_with_header(std::vector<std::string>& ccds,
