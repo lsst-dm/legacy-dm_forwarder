@@ -26,10 +26,13 @@
 #include <netdb.h>
 #include <future>
 
+#include <ims/Store.hh>
+#include <ims/Folder.hh>
 #include <core/Exceptions.h>
 #include <core/Consumer.h>
 #include <core/SimpleLogger.h>
 #include <core/RedisConnection.h>
+#include <daq/Scanner.h>
 #include <forwarder/YAMLFormatter.h>
 #include <forwarder/miniforwarder.h>
 
@@ -140,6 +143,8 @@ miniforwarder::miniforwarder(const std::string& config,
         { "FILE_TRANSFER_COMPLETED_ACK", std::bind(&miniforwarder::process_ack,
                 this, std::placeholders::_1) },
         { "ASSOCIATED", std::bind(&miniforwarder::associated,
+                this, std::placeholders::_1) },
+        { "SCAN", std::bind(&miniforwarder::scan,
                 this, std::placeholders::_1) },
     };
 
@@ -368,6 +373,33 @@ void miniforwarder::associated(const YAML::Node& n) {
     catch(std::exception& e) {
         LOG_CRT << e.what();
     }
+}
+
+void miniforwarder::scan(const YAML::Node& n) {
+    int day;
+    try {
+        day = n["DAY"].as<int>();
+    }
+    catch (YAML::TypedBadConversion<int>& e) {
+        LOG_CRT << "RabbitMQ message has malformed param - DAY";
+        return;
+    }
+
+    IMS::Store store(_partition.c_str());
+    Scanner scanner(_partition, day);
+
+    IMS::Folder folder(_folder.c_str(), store.catalog);
+    if (!folder) {
+        LOG_CRT << "Cannot instantiate IMS::Folder for " << _folder;
+        return;
+    }
+
+    if (!folder.length()) {
+        LOG_WRN << "Folder " << _folder << " is empty";
+        return;
+    }
+    folder.traverse(scanner);
+    std::vector<std::string> images = scanner.get_images();
 }
 
 void miniforwarder::publish_ack(const YAML::Node& n) {

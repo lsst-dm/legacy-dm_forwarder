@@ -14,6 +14,7 @@ set(OBJ
     "DAQDecoder.cpp"
     "DAQFetcher.cpp"
     "Notification.cpp"
+    "Scanner.cpp"
     "../forwarder/Formatter.cpp"
 )
 

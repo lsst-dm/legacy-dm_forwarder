@@ -43,6 +43,7 @@ target_link_libraries(test_exe PRIVATE
     ${daq_dsi}
     ${daq_rms}
     ${daq_net}
+    ${daq_osa}
     ${boost_log}
     ${boost_thread}
     ${boost_filesystem}

@@ -48,3 +48,8 @@ msg['REPLY_QUEUE'] = 'at_foreman_ack_publish'
 msg['IMAGE_ID'] = image_id
 msg['ACK_ID'] = 'ack_100'
 ch.basic_publish('message', 'f99_consume', yaml.dump(msg))
+
+msg = {}
+msg['MSG_TYPE'] = 'SCAN'
+msg['DAY'] = 0
+ch.basic_publish('message', 'f99_consume', yaml.dump(msg))
