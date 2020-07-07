@@ -33,6 +33,7 @@
 #include <core/SimpleLogger.h>
 #include <core/RedisConnection.h>
 #include <daq/Scanner.h>
+#include <forwarder/Board.h>
 #include <forwarder/YAMLFormatter.h>
 #include <forwarder/miniforwarder.h>
 
@@ -273,13 +274,13 @@ void miniforwarder::header_ready(const YAML::Node& n) {
     }
     catch (L1::CannotFetchHeader& e) {
         int error_code = 5610;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
+        publish_image_retrieval_for_archiving(error_code, image_id, "", "", "",
                 e.what());
     }
     catch (std::exception& e) {
         LOG_CRT << e.what();
         int error_code = 5610;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
+        publish_image_retrieval_for_archiving(error_code, image_id, "", "", "",
                 e.what());
     }
 }
@@ -298,49 +299,49 @@ void miniforwarder::end_readout(const YAML::Node& n) {
 
     _notification->block(_mode, image_id, _folder);
 
-    try {
-        std::vector<std::future<void>> tasks;
-        std::vector<std::string> locations = _db->locations(image_id);
-        for (auto&& location : locations) {
-            // get sensor type
-            DAQ::Sensor::Type sensor = _pattern->sensor(location);
-            std::vector<int> data_segment = _pattern->data_segment(sensor);
-            int xor_pattern = _pattern->get_xor(sensor);
+    std::vector<std::pair<std::string, std::future<void>>> tasks;
+    std::vector<std::string> locations = _db->locations(image_id);
+    for (auto&& location : locations) {
+        // get sensor type
+        DAQ::Sensor::Type sensor = _pattern->sensor(location);
+        std::vector<int> data_segment = _pattern->data_segment(sensor);
+        int xor_pattern = _pattern->get_xor(sensor);
 
-            std::unique_ptr<DAQFetcher> daq = std::unique_ptr<DAQFetcher>(
-                    new DAQFetcher(_partition, _folder, data_segment,
-                        _redis_params, xor_pattern));
-            std::future<void> job = std::async(std::launch::async,
-                    &DAQFetcher::fetch,
-                    std::move(daq),
-                    _fits_path,
-                    image_id,
-                    location);
-            tasks.push_back(std::move(job));
+        std::unique_ptr<DAQFetcher> daq = std::unique_ptr<DAQFetcher>(
+                new DAQFetcher(_partition, _folder, data_segment,
+                    _redis_params, xor_pattern));
+        std::future<void> job = std::async(std::launch::async,
+                &DAQFetcher::fetch,
+                std::move(daq),
+                _fits_path,
+                image_id,
+                location);
+        tasks.push_back(make_pair(location, std::move(job)));
+    }
+
+    for (auto&& task : tasks) {
+        try {
+            task.second.get();
         }
+        catch (L1::RedisError& e) {
+            LOG_CRT << e.what();
 
-        for (auto&& task : tasks) {
-            task.get();
+            int error_code = 5611;
+            L1::Board board = L1::Board::decode_location(task.first);
+            publish_image_retrieval_for_archiving(error_code, image_id,
+                    board.raft, board.ccd, "", e.what());
         }
+        catch (L1::CannotFetchPixel& e) {
+            LOG_CRT << e.what();
 
-        assemble(image_id);
+            int error_code = 5611;
+            L1::Board board = L1::Board::decode_location(task.first);
+            publish_image_retrieval_for_archiving(error_code, image_id,
+                    board.raft, board.ccd, "", e.what());
+        }
     }
-    catch (L1::RedisError& e) {
-        int error_code = 5611;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                e.what());
-    }
-    catch (L1::CannotFetchPixel& e) {
-        int error_code = 5611;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                e.what());
-    }
-    catch (std::exception& e) {
-        LOG_CRT << e.what();
-        int error_code = 5611;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                e.what());
-    }
+
+    assemble(image_id);
 }
 
 void miniforwarder::process_ack(const YAML::Node& n) {
@@ -436,11 +437,15 @@ void miniforwarder::publish_xfer_complete(const std::string& obsid,
 void miniforwarder::publish_image_retrieval_for_archiving(
         const int& error_code,
         const std::string& obsid,
+        const std::string& raft,
+        const std::string& ccd,
         const std::string& filename,
         const std::string& desc) {
     const std::string msg = _builder.build_image_retrieval_for_archiving(
             error_code,
             obsid,
+            raft,
+            ccd,
             filename,
             desc);
     try {
@@ -450,72 +455,42 @@ void miniforwarder::publish_image_retrieval_for_archiving(
 }
 
 void miniforwarder::assemble(const std::string& image_id) {
-    try {
-        if (_db->ready(image_id)) {
+    if (_db->ready(image_id)) {
 
-            xfer_info params = _db->get_xfer(image_id);
-            std::string session_id = params.session_id;
-            std::string job_num = params.job_num;
-            std::string to = params.target;
+        xfer_info params = _db->get_xfer(image_id);
+        std::string session_id = params.session_id;
+        std::string job_num = params.job_num;
+        std::string to = params.target;
 
-            std::string header = _db->header(image_id);
-            std::vector<std::string> ccds = _db->ccds(image_id);
+        std::string header = _db->header(image_id);
+        std::vector<std::string> ccds = _db->ccds(image_id);
 
-            format_with_header(ccds, header);
+        // format file with header
+        format_with_header(ccds, header);
+
+        // send file
+        try {
             _sender->send(ccds, fs::path(to));
             publish_completed_msgs(image_id, to, ccds, session_id, job_num);
-
-            LOG_INF << "********* READOUT COMPLETE for " << image_id;
-
             cleanup(image_id, ccds, header);
+            LOG_INF << "********* READOUT COMPLETE for " << image_id;
         }
-    }
-    catch (L1::RedisError& e) {
-        int error_code = 5612;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                e.what());
-    }
-    catch (L1::CannotFormatFitsfile& e) {
-        int error_code = 5612;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                e.what());
-    }
-    catch (L1::CannotCopyFile& e) {
-        int error_code = 5612;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                e.what());
-    }
-    catch (std::exception& e) {
-        std::ostringstream err;
-        err << "Cannot assemble fitsfile because " << e.what();
-        LOG_CRT << err.str();
-        int error_code = 5612;
-        publish_image_retrieval_for_archiving(error_code, image_id, "",
-                err.str());
+        catch (L1::CannotCopyFile& e) {
+            LOG_CRT << e.what();
+
+            int error_code = 5612;
+            publish_image_retrieval_for_archiving(error_code, image_id, "", "",
+                    "", e.what());
+        }
     }
 }
 
 void miniforwarder::format_with_header(std::vector<std::string>& ccds,
                                        const std::string header) {
-    std::vector<std::future<void>> tasks;
+    std::vector<std::pair<std::string, std::future<void>>> tasks;
     for (auto&& ccd : ccds) {
-        // find -R22S00.fits
-        size_t hyphen = ccd.find_last_of("-");
-        size_t dot = ccd.find_last_of(".");
-
-        if (hyphen == std::string::npos || dot == std::string::npos) {
-            std::ostringstream err;
-            err << "Extracting bay board from sensor " << ccd << " is invalid "
-                << "because filename does not conform to Image-R00S00.fits";
-            LOG_CRT << err.str();
-            throw L1::CannotFormatFitsfile(err.str());
-        }
-        std::string sensor_name = ccd.substr(hyphen+1, dot-hyphen-1);
-        std::string bay = sensor_name.substr(1, 2);
-        std::string board = sensor_name.substr(4, 1);
-        std::string bay_board = bay + "/" + board;
-
-        DAQ::Sensor::Type sensor = ReadoutPattern::sensor(bay_board);
+        L1::Board board = L1::Board::decode_filename(ccd);
+        DAQ::Sensor::Type sensor = ReadoutPattern::sensor(board.bay_board);
 
         std::vector<std::string> mapping = _pattern->data_segment_name(sensor);
         auto fmt = std::unique_ptr<YAMLFormatter>(
@@ -527,11 +502,29 @@ void miniforwarder::format_with_header(std::vector<std::string>& ccds,
                 fs::path(ccd),
                 fs::path(header)
             );
-        tasks.push_back(std::move(job));
+        tasks.push_back(make_pair(ccd, std::move(job)));
     }
 
     for (auto&& task : tasks) {
-        task.get();
+        try {
+            task.second.get();
+        }
+        catch (L1::RedisError& e) {
+            LOG_CRT << e.what();
+
+            int error_code = 5611;
+            L1::Board board = L1::Board::decode_filename(task.first);
+            publish_image_retrieval_for_archiving(error_code, board.obsid,
+                   board.raft, board.ccd, "", e.what());
+        }
+        catch (L1::CannotFormatFitsfile& e) {
+            LOG_CRT << e.what();
+
+            int error_code = 5611;
+            L1::Board board = L1::Board::decode_filename(task.first);
+            publish_image_retrieval_for_archiving(error_code, board.obsid,
+                    board.raft, board.ccd, "", e.what());
+        }
     }
 }
 
@@ -548,13 +541,15 @@ void miniforwarder::publish_completed_msgs(const std::string image_id,
         std::string to_dir = to.substr(to.find_last_of(":")+1);
         std::string to_fullpath = to_dir + "/" + filename;
 
+        L1::Board board = L1::Board::decode_filename(filename);
+
         std::ostringstream msg;
         msg << filename << " is successfully transferred to " << to;
 
         publish_xfer_complete(image_id, to_fullpath, session_id,
                 job_num);
-        publish_image_retrieval_for_archiving(0, image_id, to_fullpath,
-                msg.str());
+        publish_image_retrieval_for_archiving(0, image_id, board.raft,
+                board.ccd, to_fullpath, msg.str());
     }
 }
 

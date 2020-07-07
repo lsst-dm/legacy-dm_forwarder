@@ -72,8 +72,8 @@ std::string MessageBuilder::build_associated_ack(const std::string& key,
 }
 
 std::string MessageBuilder::build_fwd_info(const std::string& hostname,
-                                                 const std::string& ip_addr,
-                                                 const std::string& consume_q) {
+                                           const std::string& ip_addr,
+                                           const std::string& consume_q) {
     YAML::Emitter msg;
     msg << YAML::DoubleQuoted;
     msg << YAML::Flow;
@@ -88,6 +88,8 @@ std::string MessageBuilder::build_fwd_info(const std::string& hostname,
 std::string MessageBuilder::build_image_retrieval_for_archiving(
         const int& code,
         const std::string& obsid,
+        const std::string& raft,
+        const std::string& ccd,
         const std::string& filename,
         const std::string& desc) {
     YAML::Emitter msg;
@@ -97,6 +99,8 @@ std::string MessageBuilder::build_image_retrieval_for_archiving(
     msg << YAML::Key << "MSG_TYPE"
         << YAML::Value << "IMAGE_RETRIEVAL_FOR_ARCHIVING";
     msg << YAML::Key << "OBSID" << YAML::Value << obsid;
+    msg << YAML::Key << "RAFT" << YAML::Value << raft;
+    msg << YAML::Key << "SENSOR" << YAML::Value << ccd;
     msg << YAML::Key << "FILENAME" << YAML::Value << filename;
     msg << YAML::Key << "STATUS_CODE" << YAML::Value << code;
     msg << YAML::Key << "DESCRIPTION" << YAML::Value << desc;

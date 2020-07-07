@@ -81,7 +81,12 @@ void DAQFetcher::fetch(const fs::path& prefix,
     }
 
     DAQDecoder decoder(img, filter);
-    decoder.run();
+    try {
+        decoder.run();
+    }
+    catch (L1::InvalidData& e) {
+        throw L1::CannotFetchPixel(e.what());
+    }
 
     if (!decoder.valid()) {
         std::ostringstream err;

@@ -3,6 +3,7 @@ project (lsst_dm_forwarder)
 
 # Build forwarder objects
 set(OBJ
+    "Board.cpp"
     "CURLHandle.cpp"
     "FileSender.cpp"
     "FitsOpener.cpp"

@@ -259,12 +259,16 @@ BOOST_AUTO_TEST_CASE(publish_image_retrieval_for_archiving) {
     BOOST_CHECK_NO_THROW(_fwd->publish_image_retrieval_for_archiving(
                 0,
                 "AT_0_20191205_00001",
+                "22",
+                "01",
                 "/data/AT_0_20191205_000001.fits",
                 "hello world")
     );
     BOOST_CHECK_NO_THROW(_fwd->publish_image_retrieval_for_archiving(
                 5610,
                 "AT_0_20191205_00001",
+                "22",
+                "22",
                 "",
                 "hello world")
     );

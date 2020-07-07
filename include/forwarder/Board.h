@@ -21,34 +21,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
-#include "core/Exceptions.h"
-#include "core/SimpleLogger.h"
-#include "daq/GuidingBuffer.h"
+#ifndef BOARD_H
+#define BOARD_H
 
-GuidingBuffer::GuidingBuffer(int64_t samples) :
-        _samples{samples},
-        _buffer(new char[IMS::Guiding::Data::bytes(samples)]),
-        _data(_buffer, samples),
-        _ccds(new IMS::Stripe[samples * 2]) {
-    _ccd[0] = _ccds;
-    _ccd[1] = _ccds + samples;
+#include <string>
+
+namespace L1 {
+    struct Board {
+        std::string bay_board;
+        std::string obsid;
+        std::string raft;
+        std::string ccd;
+
+        // split /xxx/xxx/.../CC_xxx-R22S22.fits
+        static Board decode_filename(const std::string filename);
+
+        // split 22/0
+        static Board decode_location(const std::string location);
+    };
 }
 
-GuidingBuffer::~GuidingBuffer() {
-    delete[] _buffer;
-    delete[] _ccds;
-}
-
-Data GuidingBuffer::process(IMS::Guiding::Source& source) {
-    int32_t err_code = _data.read(source);
-    if (err_code) {
-        std::ostringstream err;
-        err << "Invalid data from GuidingBuffer with error code " << err_code;
-        LOG_CRT << err.str();
-        throw L1::InvalidData(err.str());
-    }
-    _data.decode01(_ccd[0], _ccd[1]);
-    Data d(2, _samples, _ccd, source.metadata());
-    return d;
-}
+#endif
