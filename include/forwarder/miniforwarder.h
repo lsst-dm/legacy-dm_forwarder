@@ -82,6 +82,8 @@ class miniforwarder : public IIPBase {
         void publish_image_retrieval_for_archiving(
                 const int& error_code,
                 const std::string& obsid,
+                const std::string& raft,
+                const std::string& ccd,
                 const std::string& filename,
                 const std::string& desc);
         boost::filesystem::path create_dir(const boost::filesystem::path&);

@@ -45,7 +45,7 @@ Data ScienceBuffer::process(IMS::Science::Source& source) {
     int32_t err_code = _data.read(source);
     if (err_code) {
         std::ostringstream err;
-        err << "Invalid data from ScienceBuffer";
+        err << "Invalid data from ScienceBuffer with error code " << err_code;
         LOG_CRT << err.str();
         throw L1::InvalidData(err.str());
     }
