@@ -32,6 +32,8 @@ class MessageBuilder {
                               const std::string& ack_bool);
         std::string build_xfer_complete(const std::string& filename,
                                         const std::string& obsid,
+                                        const std::string& raft,
+                                        const std::string& ccd,
                                         const std::string& session_id,
                                         const std::string& job_num,
                                         const std::string& reply_q);

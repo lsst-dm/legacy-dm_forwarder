@@ -76,6 +76,8 @@ class miniforwarder : public IIPBase {
         void publish_ack(const YAML::Node&);
         void publish_xfer_complete(
                 const std::string& obsid,
+                const std::string& raft,
+                const std::string& ccd,
                 const std::string& to,
                 const std::string& session_id,
                 const std::string& job_num);

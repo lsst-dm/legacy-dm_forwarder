@@ -420,12 +420,14 @@ void miniforwarder::publish_ack(const YAML::Node& n) {
 }
 
 void miniforwarder::publish_xfer_complete(const std::string& obsid,
+                                          const std::string& raft,
+                                          const std::string& ccd,
                                           const std::string& to,
                                           const std::string& session_id,
                                           const std::string& job_num) {
     try {
-        const std::string msg = _builder.build_xfer_complete(to, obsid,
-                session_id, job_num, _consume_q);
+        const std::string msg = _builder.build_xfer_complete(to, obsid, raft,
+                ccd, session_id, job_num, _consume_q);
         _pub->publish_message(_archive_q, msg);
     }
     catch (L1::PublisherError& e) { }
@@ -546,8 +548,8 @@ void miniforwarder::publish_completed_msgs(const std::string image_id,
         std::ostringstream msg;
         msg << filename << " is successfully transferred to " << to;
 
-        publish_xfer_complete(image_id, to_fullpath, session_id,
-                job_num);
+        publish_xfer_complete(image_id, board.raft, board.ccd,
+                to_fullpath, session_id, job_num);
         publish_image_retrieval_for_archiving(0, image_id, board.raft,
                 board.ccd, to_fullpath, msg.str());
     }
