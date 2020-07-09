@@ -41,6 +41,8 @@ std::string MessageBuilder::build_ack(const std::string& msg_type,
 
 std::string MessageBuilder::build_xfer_complete(const std::string& filename,
                                                 const std::string& obsid,
+                                                const std::string& raft,
+                                                const std::string& ccd,
                                                 const std::string& session_id,
                                                 const std::string& job_num,
                                                 const std::string& reply_q) {
@@ -51,6 +53,8 @@ std::string MessageBuilder::build_xfer_complete(const std::string& filename,
     msg << YAML::Key << "MSG_TYPE" << YAML::Value << "FILE_TRANSFER_COMPLETED";
     msg << YAML::Key << "FILENAME" << YAML::Value << filename;
     msg << YAML::Key << "OBSID" << YAML::Value << obsid;
+    msg << YAML::Key << "RAFT" << YAML::Value << raft;
+    msg << YAML::Key << "SENSOR" << YAML::Value << ccd;
     msg << YAML::Key << "SESSION_ID" << YAML::Value << session_id;
     msg << YAML::Key << "JOB_NUM" << YAML::Value << job_num;
     msg << YAML::Key << "REPLY_QUEUE" << YAML::Value << reply_q;
