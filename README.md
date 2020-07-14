@@ -7,7 +7,7 @@ Forwarder application for transferring fitsfiles
    * change foobared to password of your choosing
    * You can use the redis.conf file included in the root directory of the Redis source code distribution as a template
     to write your configuration file if you do not already have one.
-   * In order to start Redis with a configuration file use the full path of the configuration file as first argument, 
+   * In order to start Redis with a configuration file use the full path of the configuration file as first argument,
    like in the following example: `redis-server /etc/redis.conf`
 2. Command Line
    * After starting the redis server (with or without config file) you can set the password at the command line

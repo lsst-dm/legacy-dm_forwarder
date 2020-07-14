@@ -11,5 +11,5 @@
  and if not, will print out the keys in each hdu that are not equal
 
 --hdu = compare pixels by hdu.
- Will let you know if the hdus are equal to one another between files 
+ Will let you know if the hdus are equal to one another between files
  or not.

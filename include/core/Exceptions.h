@@ -188,6 +188,11 @@ namespace L1 {
         public:
             InvalidData(const std::string& msg) : L1Exception(msg) {}
     };
+
+    class ScannerError: public L1Exception {
+        public:
+            ScannerError(const std::string& msg) : L1Exception(msg) {}
+    };
 };
 
 #endif

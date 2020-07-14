@@ -377,30 +377,38 @@ void miniforwarder::associated(const YAML::Node& n) {
 }
 
 void miniforwarder::scan(const YAML::Node& n) {
-    int day;
+    int minutes;
     try {
-        day = n["DAY"].as<int>();
+        minutes = n["MINUTES"].as<int>();
+    }
+    catch (YAML::InvalidNode& e) {
+        LOG_CRT << "RabbitMQ message has missing param - MINUTES";
+        return;
     }
     catch (YAML::TypedBadConversion<int>& e) {
-        LOG_CRT << "RabbitMQ message has malformed param - DAY";
+        LOG_CRT << "RabbitMQ message has invalid param "
+                << "- MINUTES, expecting as int";
         return;
     }
 
     IMS::Store store(_partition.c_str());
-    Scanner scanner(_partition, day);
+    try {
+        IMS::Folder folder(_folder.c_str(), store.catalog);
+        if (!folder) {
+            LOG_CRT << "Cannot instantiate IMS::Folder for " << _folder;
+            return;
+        }
 
-    IMS::Folder folder(_folder.c_str(), store.catalog);
-    if (!folder) {
-        LOG_CRT << "Cannot instantiate IMS::Folder for " << _folder;
-        return;
-    }
+        if (!folder.length()) {
+            LOG_WRN << "Folder " << _folder << " is empty";
+            return;
+        }
 
-    if (!folder.length()) {
-        LOG_WRN << "Folder " << _folder << " is empty";
-        return;
+        Scanner scanner(_partition, minutes);
+        folder.traverse(scanner);
+        std::vector<std::string> images = scanner.get_images();
     }
-    folder.traverse(scanner);
-    std::vector<std::string> images = scanner.get_images();
+    catch (L1::ScannerError& e) { }
 }
 
 void miniforwarder::publish_ack(const YAML::Node& n) {

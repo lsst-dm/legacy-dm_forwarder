@@ -297,7 +297,20 @@ BOOST_AUTO_TEST_CASE(check_valid_board) {
 }
 
 BOOST_AUTO_TEST_CASE(register_fwd) {
+}
 
+BOOST_AUTO_TEST_CASE(scan) {
+    YAML::Node n;
+    n["DAY"] = 3;
+    BOOST_CHECK_NO_THROW(_fwd->scan(n));
+
+    YAML::Node n2;
+    n["MINUTES"] = -1;
+    BOOST_CHECK_NO_THROW(_fwd->scan(n2));
+
+    YAML::Node n3;
+    n["MINUTES"] = 10;
+    BOOST_CHECK_NO_THROW(_fwd->scan(n3));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -39,7 +39,7 @@
  */
 class Scanner : public IMS::Processor {
     public:
-        Scanner(const std::string partition, const int day);
+        Scanner(const std::string partition, const int minutes);
         void process(const IMS::Id& id);
         std::vector<std::string> get_images();
 
