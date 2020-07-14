@@ -54,5 +54,5 @@ ch.basic_publish('message', 'f99_consume', yaml.dump(msg))
 
 msg = {}
 msg['MSG_TYPE'] = 'SCAN'
-msg['DAY'] = 0
+msg['MINUTES'] = 60*24*10
 ch.basic_publish('message', 'f99_consume', yaml.dump(msg))

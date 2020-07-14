@@ -10,6 +10,7 @@ set(OBJ
     "./forwarder/miniforwarderTest.cpp"
     "./forwarder/YAMLFormatterTest.cpp"
     "./forwarder/ReadoutPatternTest.cpp"
+    "./daq/ScannerTest.cpp"
 )
 
 add_library(lsst_iip_tests SHARED ${OBJ})

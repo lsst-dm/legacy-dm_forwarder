@@ -26,9 +26,9 @@
 
 #include <string>
 
-class Info { 
+class Info {
     public:
-        enum class MODE { 
+        enum class MODE {
             LIVE,
             CATCHUP,
             UNDEFINED

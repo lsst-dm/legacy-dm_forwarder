@@ -30,7 +30,7 @@
 
 namespace fs = boost::filesystem;
 
-Formatter::Formatter(const std::vector<int>& data_segment, 
+Formatter::Formatter(const std::vector<int>& data_segment,
                      redis_connection_params params) :
         _data_segment{data_segment} {
     _db = std::unique_ptr<RedisConnection>(

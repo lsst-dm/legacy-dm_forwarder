@@ -64,7 +64,7 @@ RedisConnection::RedisConnection(const std::string host,
     LOG_INF << "Made connection to redis " << host << " using db " << db;
 }
 
-RedisConnection::RedisConnection(struct redis_connection_params params) 
+RedisConnection::RedisConnection(struct redis_connection_params params)
         : _host(params.host) {
     // Timeout of 2 seconds for connection handshake
     const struct timeval tv{2, 0};
@@ -79,7 +79,7 @@ RedisConnection::RedisConnection(struct redis_connection_params params)
 
     select(std::to_string(params.db));
     exec();
-    LOG_INF << "Made connection to redis " << params.host 
+    LOG_INF << "Made connection to redis " << params.host
             << " using db " << params.db;
 }
 

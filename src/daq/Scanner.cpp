@@ -24,35 +24,44 @@
 #include <time.h>
 #include <ims/Folder.hh>
 #include <core/SimpleLogger.h>
+#include <core/Exceptions.h>
 #include <daq/Scanner.h>
 
-Scanner::Scanner(const std::string partition, const int day) :
+Scanner::Scanner(const std::string partition, const int minutes) :
         IMS::Processor(),
         _store(partition.c_str()) {
 
-    // compute images older than given day to catch up
+    if (minutes < 0) {
+        std::ostringstream err;
+        err << "Negative value of minutes is not valid. given " << minutes;
+        LOG_CRT << err.str();
+        throw L1::ScannerError(err.str());
+    }
+
+    // compute images older than given minutes to catch up
     time_t current;
     time(&current);
 
     struct tm* local;
     local = localtime(&current);
-    local->tm_mday = local->tm_mday - day;
+    local->tm_min = local->tm_min - minutes;
     time_t last_time = mktime(local);
-
     _timestamp = OSA::TimeStamp(last_time);
 }
 
 void Scanner::process(const IMS::Id& id) {
     IMS::Image image(id, _store);
     if (!image) {
-        LOG_CRT << "Cannot instantiate IMS::Image for processing";
-        return;
+        std::ostringstream err;
+        err << "Cannot instantiate IMS::Image for scanning DAQ catalog";
+        LOG_CRT << err.str();
+        throw L1::ScannerError(err.str());
     }
 
     OSA::TimeStamp time = image.metadata().timestamp();
     std::string img_name = image.metadata().name();
 
-    if (_timestamp > time) {
+    if (time > _timestamp) {
         _images.push_back(img_name);
     }
 }
