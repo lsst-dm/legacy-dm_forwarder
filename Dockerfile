@@ -75,7 +75,7 @@ RUN mkdir daq && cd daq && \
     tar zxvf daq.tar.gz && \
     cd * && \
     mkdir -p /opt/lsst/daq && \
-    cp -r ./x86 /opt/lsst/daq/x86 && \
+    cp -r ./x86/lib /opt/lsst/daq/lib && \
     cp -r ./include /opt/lsst/daq/include
 
 # build dm_forwarder
@@ -83,7 +83,7 @@ WORKDIR /app
 COPY . /app
 RUN rm -rf /app/build 2> /dev/null && \
     mkdir /app/build && cd build && \
-    cmake .. && \
+    cmake -DTEST=ON .. && \
     cmake --build .
 
 # dm_forwarder
@@ -97,9 +97,13 @@ COPY --from=builder /usr/lib64/librabbitmq.so /usr/lib/
 COPY --from=builder /usr/lib/libyaml-cpp.so /usr/lib/
 COPY --from=builder /usr/lib/libSimpleAmqpClient.so /usr/lib/
 COPY --from=builder /usr/lib/libcfitsio.so /usr/lib/
-COPY --from=builder /opt/lsst/daq/x86 /opt/lsst/daq/x86
-COPY --from=builder /app/build/src/forwarder/dm_forwarder /app
+COPY --from=builder /opt/lsst/daq/lib /opt/lsst/daq/lib
 COPY --from=builder /usr/bin/bbcp /usr/bin/bbcp
+
+# dm_forwarder executables
+COPY --from=builder /app/build/src/forwarder/dm_forwarder /app/bin/
+COPY --from=builder /app/build/tests/test_exe /app/bin/
+COPY --from=builder /app/build/tests/liblsst_iip_tests.so /app/lib/
 
 RUN yum install -y epel-release
 RUN yum install -y \
@@ -115,4 +119,4 @@ RUN mkdir /var/tmp/data && \
     chmod 777 /var/tmp/data && \
     chmod 777 /var/log/iip
 
-CMD ["/app/dm_forwarder"]
+#CMD ["/app/dm_forwarder"]

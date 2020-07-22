@@ -1,0 +1,262 @@
+﻿{
+  "bindings": [
+    {
+      "arguments": {},
+      "destination": "ar_foreman_ack_publish",
+      "destination_type": "queue",
+      "routing_key": "ar_foreman_ack_publish",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "archive_ctrl_consume",
+      "destination_type": "queue",
+      "routing_key": "archive_ctrl_consume",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "archive_ctrl_publish",
+      "destination_type": "queue",
+      "routing_key": "archive_ctrl_publish",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "at_forwarder_publish",
+      "destination_type": "queue",
+      "routing_key": "at_forwarder_publish",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "catchup_foreman_ack_publish",
+      "destination_type": "queue",
+      "routing_key": "catchup_foreman_ack_publish",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "cc_foreman_ack_publish",
+      "destination_type": "queue",
+      "routing_key": "cc_foreman_ack_publish",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "cc_foreman_consume",
+      "destination_type": "queue",
+      "routing_key": "cc_foreman_consume",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "cc_forwarder_publish",
+      "destination_type": "queue",
+      "routing_key": "cc_forwarder_publish",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "cc_publish_to_oods",
+      "destination_type": "queue",
+      "routing_key": "cc_publish_to_oods",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "f99_consume",
+      "destination_type": "queue",
+      "routing_key": "f99_consume",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "oods_publish_to_cc",
+      "destination_type": "queue",
+      "routing_key": "oods_publish_to_cc",
+      "source": "message",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "destination": "telemetry_queue",
+      "destination_type": "queue",
+      "routing_key": "telemetry_queue",
+      "source": "message",
+      "vhost": "test"
+    }
+  ],
+  "exchanges": [
+    {
+      "arguments": [],
+      "auto_delete": false,
+      "durable": true,
+      "name": "message",
+      "type": "direct",
+      "vhost": "test"
+    }
+  ],
+  "global_parameters": [],
+  "parameters": [],
+  "permissions": [
+    {
+      "configure": ".*",
+      "read": ".*",
+      "user": "iip",
+      "vhost": "test",
+      "write": ".*"
+    },
+    {
+      "configure": ".*",
+      "read": ".*",
+      "user": "guest",
+      "vhost": "/",
+      "write": ".*"
+    }
+  ],
+  "policies": [],
+  "queues": [
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "archive_ctrl_consume",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "oods_publish_to_cc",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "cc_foreman_ack_publish",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "telemetry_queue",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "catchup_foreman_ack_publish",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "cc_forwarder_publish",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "ar_foreman_ack_publish",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "f99_consume",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "cc_foreman_consume",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "at_forwarder_publish",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "cc_publish_to_oods",
+      "type": "classic",
+      "vhost": "test"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "archive_ctrl_publish",
+      "type": "classic",
+      "vhost": "test"
+    }
+  ],
+  "rabbit_version": "3.8.5",
+  "rabbitmq_version": "3.8.5",
+  "topic_permissions": [],
+  "users": [
+    {
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "name": "iip",
+      "password_hash": "GC+/ODFVa4PL9WT5vrfu95Uvpsn3mN89BCubk4Cn+sG2Beo+",
+      "tags": ""
+    },
+    {
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "name": "guest",
+      "password_hash": "XM5sxmXoeXdck7JyIFzxTBi6vzsSX2MYO5tC5d2wtH5thzlK",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "limits": [],
+      "metadata": {
+        "description": "Default virtual host",
+        "tags": []
+      },
+      "name": "/"
+    },
+    {
+      "limits": [],
+      "metadata": {
+        "description": "",
+        "tags": []
+      },
+      "name": "test"
+    }
+  ]
+}

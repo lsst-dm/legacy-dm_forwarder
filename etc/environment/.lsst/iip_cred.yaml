@@ -1,0 +1,6 @@
+# this is used inside the docker container within isolated environment
+# for isolated one-time mockup rabbitmq server. This is not suited
+# to use outside of this testing environment.
+rabbitmq_users:
+  service_user: iip
+  service_passwd: password
