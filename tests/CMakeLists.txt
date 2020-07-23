@@ -4,13 +4,8 @@ project (lsst_iip_tests)
 # Build forwarder objects
 set(OBJ
     "./core/RabbitConnectionTest.cpp"
-    "./core/RedisConnectionTest.cpp"
-    #"./daq/DAQFetcherTest.cpp"
-    #"./daq/DataTest.cpp"
-    "./forwarder/miniforwarderTest.cpp"
-    "./forwarder/YAMLFormatterTest.cpp"
+    "./daq/DataTest.cpp"
     "./forwarder/ReadoutPatternTest.cpp"
-    "./daq/ScannerTest.cpp"
 )
 
 add_library(lsst_iip_tests SHARED ${OBJ})
