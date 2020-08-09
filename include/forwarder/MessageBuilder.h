@@ -27,9 +27,11 @@
 class MessageBuilder {
     public:
         std::string build_ack(const std::string& msg_type,
+                              const std::string& image_id,
                               const std::string& component,
                               const std::string& ack_id,
                               const std::string& ack_bool);
+        std::string build_scan_ack();
         std::string build_xfer_complete(const std::string& filename,
                                         const std::string& obsid,
                                         const std::string& raft,
