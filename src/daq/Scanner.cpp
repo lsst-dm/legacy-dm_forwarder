@@ -47,6 +47,8 @@ Scanner::Scanner(const std::string partition, const int minutes) :
     local->tm_min = local->tm_min - minutes;
     time_t last_time = mktime(local);
     _timestamp = OSA::TimeStamp(last_time);
+
+    LOG_INF << "Querying images from " << _timestamp.decode() << " to now";
 }
 
 void Scanner::process(const IMS::Id& id) {
@@ -58,10 +60,15 @@ void Scanner::process(const IMS::Id& id) {
         throw L1::ScannerError(err.str());
     }
 
-    OSA::TimeStamp time = image.metadata().timestamp();
-    std::string img_name = image.metadata().name();
+    const OSA::TimeStamp time = image.metadata().timestamp();
+    const std::string img_name = image.metadata().name();
 
-    if (time > _timestamp) {
+    // handling for img name corruption from DAQ
+    auto it = std::find_if(img_name.begin(), img_name.end(), [](char c) { 
+                return !(isalnum(c) || c == '_');
+              });
+
+    if (time > _timestamp && it == img_name.end()) {
         _images.push_back(img_name);
     }
 }

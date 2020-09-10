@@ -141,6 +141,15 @@ miniforwarder::miniforwarder(const std::string& config,
         { "CC_FWDR_END_READOUT", std::bind(&miniforwarder::end_readout,
                 this, std::placeholders::_1) },
 
+        { "CATCHUP_FWDR_HEALTH_CHECK", std::bind(&miniforwarder::health_check,
+                this, std::placeholders::_1) },
+        { "CATCHUP_FWDR_XFER_PARAMS", std::bind(&miniforwarder::xfer_params,
+                this, std::placeholders::_1) },
+        { "CATCHUP_FWDR_HEADER_READY", std::bind(&miniforwarder::header_ready,
+                this, std::placeholders::_1) },
+        { "CATCHUP_FWDR_END_READOUT", std::bind(&miniforwarder::end_readout,
+                this, std::placeholders::_1) },
+
         { "FILE_TRANSFER_COMPLETED_ACK", std::bind(&miniforwarder::process_ack,
                 this, std::placeholders::_1) },
         { "ASSOCIATED", std::bind(&miniforwarder::associated,
@@ -407,6 +416,23 @@ void miniforwarder::scan(const YAML::Node& n) {
         Scanner scanner(_partition, minutes);
         folder.traverse(scanner);
         std::vector<std::string> images = scanner.get_images();
+
+        const std::string host = _hb_params.redis_params.host;
+        const int port = _hb_params.redis_params.port;
+        const int db = _hb_params.redis_params.db;
+
+        const std::string daq_key = n["KEY"].as<std::string>();
+
+        RedisConnection con(host, port, db);
+        con.lpush(daq_key, images);
+        con.exec();
+
+        const std::string reply_q = n["REPLY_QUEUE"].as<std::string>();
+        const std::string msg = _builder.build_scan_ack();
+        _pub->publish_message(reply_q, msg);
+
+        LOG_INF << "Published ack for SCAN with values: " << msg;
+        LOG_INF << "Finished scanning images from DAQ catalog";
     }
     catch (L1::ScannerError& e) { }
 }
@@ -414,9 +440,10 @@ void miniforwarder::scan(const YAML::Node& n) {
 void miniforwarder::publish_ack(const YAML::Node& n) {
     try {
         const std::string msg_type = n["MSG_TYPE"].as<std::string>();
+        const std::string image_id = n["IMAGE_ID"].as<std::string>();
         const std::string ack_id = n["ACK_ID"].as<std::string>();
         const std::string reply_q = n["REPLY_QUEUE"].as<std::string>();
-        const std::string msg = _builder.build_ack(msg_type, _name,
+        const std::string msg = _builder.build_ack(msg_type, image_id, _name,
                 ack_id, "True");
         _pub->publish_message(reply_q, msg);
         LOG_DBG << "Published ack for " << msg_type << " with values: " << msg;

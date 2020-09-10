@@ -25,6 +25,7 @@
 #include <forwarder/MessageBuilder.h>
 
 std::string MessageBuilder::build_ack(const std::string& msg_type,
+                                      const std::string& image_id,
                                       const std::string& component,
                                       const std::string& ack_id,
                                       const std::string& ack_bool) {
@@ -33,8 +34,19 @@ std::string MessageBuilder::build_ack(const std::string& msg_type,
     msg << YAML::Flow;
     msg << YAML::BeginMap;
     msg << YAML::Key << "MSG_TYPE" << YAML::Value << msg_type + "_ACK";
+    msg << YAML::Key << "IMAGE_ID" << YAML::Value << image_id;
     msg << YAML::Key << "COMPONENT" << YAML::Value << component;
     msg << YAML::Key << "ACK_ID" << YAML::Value << ack_id;
+    msg << YAML::EndMap;
+    return msg.c_str();
+}
+
+std::string MessageBuilder::build_scan_ack() {
+    YAML::Emitter msg;
+    msg << YAML::DoubleQuoted;
+    msg << YAML::Flow;
+    msg << YAML::BeginMap;
+    msg << YAML::Key << "MSG_TYPE" << YAML::Value << "SCAN_ACK";
     msg << YAML::EndMap;
     return msg.c_str();
 }
