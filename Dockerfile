@@ -107,6 +107,7 @@ COPY --from=builder /app/build/tests/liblsst_iip_tests.so /app/lib/
 
 RUN yum install -y epel-release
 RUN yum install -y \
+        net-tools \
         boost169-1.69.0 \
         libcurl-7.29.0 \
         hiredis-0.12.1 \
@@ -119,4 +120,4 @@ RUN mkdir /var/tmp/data && \
     chmod 777 /var/tmp/data && \
     chmod 777 /var/log/iip
 
-#CMD ["/app/dm_forwarder"]
+CMD ["/app/bin/dm_forwarder"]
