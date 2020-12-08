@@ -65,8 +65,9 @@ RUN mkdir cfitsio && cd cfitsio && \
     curl -L -o cfitsio.tar.gz ${cfitsioURL}  && \
     tar zxvf cfitsio.tar.gz && \
     cd * && \
+    cp FindPthreads.cmake Findpthreads.cmake && \
     mkdir build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
+    cmake -DUSE_PTHREADS=ON -DCMAKE_INSTALL_PREFIX=/usr .. && \
     cmake --build . --target install
 
 # daq
@@ -116,8 +117,10 @@ RUN yum install -y \
         zlib-1.2.7
 
 RUN mkdir /var/tmp/data && \
+    mkdir /var/tmp/data/fits && \
+    mkdir /var/tmp/data/header && \
     mkdir /var/log/iip && \
-    chmod 777 /var/tmp/data && \
+    chmod -R 777 /var/tmp/data && \
     chmod 777 /var/log/iip
 
 CMD ["/app/bin/dm_forwarder"]
