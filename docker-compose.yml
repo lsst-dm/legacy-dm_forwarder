@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.7"
 
 services:
   dm_forwarder:
@@ -9,11 +9,11 @@ services:
       args:
         - cmakeURL=https://github.com/Kitware/CMake/releases/download/v3.15.4/cmake-3.15.4-Linux-x86_64.sh
         - bbcpURL=https://www.slac.stanford.edu/~abh/bbcp/bbcp.git/
-        - rabbitmqcURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/rabbitmq-c/v0.10.0.tar.gz
-        - SimpleAmqpClientURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/SimpleAmqpClient/SimpleAmqpClient-2.4.0.tar.gz
-        - yamlcppURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/yaml-cpp/yaml-cpp-0.6.3.tar.gz
-        - cfitsioURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/cfitsio/cfitsio-3.450.tar.gz
-        - daqURL=http://lsst-web.ncsa.illinois.edu/~hwin16/packages/daq/R4-V2.3.tgz
+        - rabbitmqcURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/rabbitmq-c/v0.10.0.tar.gz
+        - SimpleAmqpClientURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/SimpleAmqpClient/SimpleAmqpClient-2.4.0.tar.gz
+        - yamlcppURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/yaml-cpp/yaml-cpp-0.6.3.tar.gz
+        - cfitsioURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/cfitsio/cfitsio-3.450.tar.gz
+        - daqURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/daq/R4-V4.11_ds100.tgz
     volumes:
       - dm_forwarder_vol:/var/tmp/data
       - dm_forwarder_vol:/var/log/iip
