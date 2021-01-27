@@ -3,7 +3,7 @@ version: "3.7"
 services:
   dm_forwarder:
     container_name: dm_forwarder
-    image: lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
+    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
     build:
       context: ./
       args:

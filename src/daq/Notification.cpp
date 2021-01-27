@@ -24,10 +24,12 @@
 #include <ims/Image.hh>
 #include <ims/ImageMetadata.hh>
 #include <ims/Barrier.hh>
+#include <core/Exceptions.h>
 #include <core/SimpleLogger.h>
 #include <daq/Notification.h>
 
-#define TIMEOUT 15*1000*1000
+#define TIMEOUT_SECONDS 15
+#define TIMEOUT TIMEOUT_SECONDS*1000*1000
 
 Notification::Notification(const std::string partition) {
     _store = std::unique_ptr<IMS::Store>(new IMS::Store(partition.c_str()));
@@ -42,31 +44,65 @@ void Notification::start() {
     LOG_INF << "Notification stream started";
 }
 
-void Notification::block(Info::MODE mode,
-                         const std::string image_id,
-                         const std::string folder) {
+void Notification::block(Info::MODE mode, const std::string image_id, const std::string folder) {
 
     if (mode != Info::MODE::LIVE) {
         return;
     }
 
-    LOG_DBG << "IMS::Image blocking for image " << image_id;
-    IMS::Image image(*_store, *_stream, TIMEOUT);
-    LOG_DBG << "Acquired image " << image_id;
+    // We make the assumption that we open the stream on start up of the Forwarder.  This
+    // is before getting an endReadout (which calls this method), so we can't be 
+    // "ahead" of reading the data coming from the stream, only behind. Any images that
+    // were on the stream that we skip will be handled by the catchup archiver.
+    //
+    while (1) {
+        //
+        // Call IMS::IMAGE to attempt to set up an image from the stream. If the image 
+        // is null, there were no pending images after TIMEOUT so we thrown an exception.
+        //
+        LOG_DBG << "Trying to read stream to find image " << image_id;
+        IMS::Image image(*_store, *_stream, TIMEOUT);
+        if (!image) {
+            std::ostringstream err;
+            err << "Wasn't able to read image in "<< TIMEOUT_SECONDS << " seconds";
+            LOG_CRT << err.str();
+            throw L1::CannotFetchPixel(err.str());
+        }
 
-    IMS::ImageMetadata meta = image.metadata();
-    std::string meta_name = std::string(meta.name());
-    std::string meta_folder = std::string(meta.folder());
-
-    if (meta_name != image_id || meta_folder != folder) {
-        LOG_CRT << "Currently streaming image " << meta_name << " in "
-                << meta_folder << " is not what is being expected "
-                << image_id << " from " << folder;
-        return;
+        //
+        // Examine the metadata.  If it doesn't match, move on and try
+        // to read next image; not matching can happen if we didn't get an endReadout
+        // about an image that made it onto the stream, which in practice means the stream
+        // has two or more images pending to read; print out a message and continue 
+        // with the loop.
+        //
+        LOG_DBG << "Acquired image ";
+    
+        IMS::ImageMetadata meta = image.metadata();
+        std::string meta_name = std::string(meta.name());
+        std::string meta_folder = std::string(meta.folder());
+    
+        if (meta_name != image_id || meta_folder != folder) {
+            LOG_INF << "Currently streaming image " << meta_name << " in "
+                    << meta_folder << " is not what is being expected "
+                    << image_id << " from " << folder;
+            continue;
+        }
+    
+        // We have the Image, the metadata matches, so now we block for the pixels.
+        LOG_DBG << "Barrier blocking for image " << image_id;
+        IMS::Barrier barrier(image);
+        barrier.block();
+        LOG_DBG << "Barrier released for image " << image_id;
+        //
+        // if image is null, then there was a TIMEOUT, which means the pixels
+        // never materialized.  Print an error, and throw an exception.
+        //
+        if (!image) {
+            std::ostringstream err;
+            err << "image " << image_id << " was not found after blocking " << TIMEOUT_SECONDS << " blocking at barrier";
+            LOG_CRT << err.str();
+            throw L1::CannotFetchPixel(err.str());
+        }
     }
-
-    LOG_DBG << "Barrier blocking for image " << image_id;
-    IMS::Barrier barrier(image);
-    barrier.block();
-    LOG_DBG << "Barrier released for image " << image_id;
 }
