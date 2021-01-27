@@ -104,5 +104,7 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
             LOG_CRT << err.str();
             throw L1::CannotFetchPixel(err.str());
         }
+        // We have the image, return
+        return;
     }
 }

@@ -40,7 +40,7 @@ void FileSender::send(std::vector<std::string>& from, const fs::path& to) {
             files << from[i];
         }
         else {
-            files << from[i] << ",";
+            files << from[i] << " ";
         }
     }
 
