@@ -81,6 +81,9 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         IMS::ImageMetadata meta = image.metadata();
         std::string meta_name = std::string(meta.name());
         std::string meta_folder = std::string(meta.folder());
+        LOG_INF << "dumping elements(); check stdout";
+        LOG_INF << "number of elements in image.metadata.elements() is " <<  image.metadata().elements().numof();
+        image.metadata().elements().dump();
     
         if (meta_name != image_id || meta_folder != folder) {
             LOG_INF << "Currently streaming image " << meta_name << " in "
