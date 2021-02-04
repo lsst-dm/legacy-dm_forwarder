@@ -34,16 +34,16 @@ FileSender::FileSender(const std::string& xfer_option) {
 
 void FileSender::send(std::vector<std::string>& from, const fs::path& to) {
     std::ostringstream files;
-    files << "{";
+ 
     for (int i = 0; i < from.size(); i++) {
         if (i == from.size()-1) {
             files << from[i];
         }
         else {
-            files << from[i] << ",";
+            files << from[i] << " ";
         }
     }
-    files << "}";
+
 
     std::ostringstream bbcp;
     bbcp << _xfer_option

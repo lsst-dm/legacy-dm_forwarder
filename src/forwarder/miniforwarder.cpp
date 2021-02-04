@@ -306,7 +306,12 @@ void miniforwarder::end_readout(const YAML::Node& n) {
         return;
     }
 
-    _notification->block(_mode, image_id, _folder);
+    try {
+        _notification->block(_mode, image_id, _folder);
+    } catch (L1::CannotFetchPixel& e) {
+        LOG_CRT << "Block failed because exception occurred.";
+        return;
+    }
 
     std::vector<std::pair<std::string, std::future<void>>> tasks;
     std::vector<std::string> locations = _db->locations(image_id);
