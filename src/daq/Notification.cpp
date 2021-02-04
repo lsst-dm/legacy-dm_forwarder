@@ -55,14 +55,14 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
     // "ahead" of reading the data coming from the stream, only behind. Any images that
     // were on the stream that we skip will be handled by the catchup archiver.
     //
-    while (1) {
+    while (true) {
         //
         // Call IMS::IMAGE to attempt to set up an image from the stream. If the image 
         // is null, there were no pending images after TIMEOUT so we thrown an exception.
         //
         LOG_DBG << "Trying to read stream to find image " << image_id;
         IMS::Image image(*_store, *_stream, TIMEOUT);
-        if (!image) {
+        if (!image)  {
             std::ostringstream err;
             err << "Wasn't able to read image in "<< TIMEOUT_SECONDS << " seconds";
             LOG_CRT << err.str();
