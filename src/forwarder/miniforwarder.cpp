@@ -48,8 +48,12 @@ miniforwarder::miniforwarder(const std::string& config,
     std::string work_dir, ip_host, redis_host_remote,
             redis_host_local, xfer_option;
     int redis_port_remote, redis_db_remote, redis_port_local, redis_db_local;
+    int _barrier_timeout = TIMEOUT;
     YAML::Node pattern;
     try {
+        int val = _config_root["BARRIER_TIMEOUT"].as<int>();
+        _barrier_timeout = val*1000*1000;
+
         work_dir = _config_root["WORK_DIR"].as<std::string>();
         ip_host = _config_root["BASE_BROKER_ADDR"].as<std::string>();
         redis_host_remote = _config_root["REDIS"]["REMOTE"]["HOST"]
@@ -188,7 +192,7 @@ miniforwarder::miniforwarder(const std::string& config,
     _watcher = std::unique_ptr<Watcher>(new Watcher());
 
     _notification = std::unique_ptr<Notification>(
-            new Notification(_partition.c_str()));
+            new Notification(_partition.c_str(), _barrier_timeout));
 }
 
 miniforwarder::~miniforwarder() {

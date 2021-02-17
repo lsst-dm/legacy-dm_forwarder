@@ -14,6 +14,7 @@ docker run \
     -u `id -u $FORWARDER_USER`:`id -g $FORWARDER_USER` \
     --name dm_forwarder \
     --network host \
+    --pid host \
     -v /home/$FORWARDER_USER/.ssh:/home/$FORWARDER_USER/.ssh \
     -v /home/$FORWARDER_USER/.lsst:/home/$FORWARDER_USER/.lsst \
     -v /var/tmp/data:/var/tmp/data \
@@ -22,4 +23,4 @@ docker run \
     -v /etc/group:/etc/group \
     -v /opt/lsst/dm_forwarder/config:/opt/lsst/dm_forwarder/config \
     -v /home/lsst-daq/images:/home/lsst-daq/images \
-    lsstts/dm_forwarder:$container_version
+    ts-dockerhub.lsst.org/lsstts/dm_forwarder:$container_version
