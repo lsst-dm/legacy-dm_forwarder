@@ -28,9 +28,6 @@
 #include <core/SimpleLogger.h>
 #include <daq/Notification.h>
 
-#define TIMEOUT_SECONDS 15
-#define TIMEOUT TIMEOUT_SECONDS*1000*1000
-
 Notification::Notification(const std::string partition, int barrier_timeout) {
     _barrier_timeout = barrier_timeout;
     _store = std::unique_ptr<IMS::Store>(new IMS::Store(partition.c_str()));
