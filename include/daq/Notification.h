@@ -31,15 +31,17 @@
 
 class Notification {
     public:
-        Notification(const std::string partition);
+        Notification(const std::string partition, int barrier_timeout);
         void start();
         void block(Info::MODE mode,
                    const std::string image_id,
                    const std::string folder);
+        
 
     private:
         std::unique_ptr<IMS::Store> _store;
         std::unique_ptr<IMS::Stream> _stream;
+        int _barrier_timeout;
 };
 
 #endif

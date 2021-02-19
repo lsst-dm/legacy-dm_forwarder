@@ -28,20 +28,18 @@
 #include <core/SimpleLogger.h>
 #include <daq/Notification.h>
 
-#define TIMEOUT_SECONDS 15
-#define TIMEOUT TIMEOUT_SECONDS*1000*1000
-
-Notification::Notification(const std::string partition) {
+Notification::Notification(const std::string partition, int barrier_timeout) {
+    _barrier_timeout = barrier_timeout;
     _store = std::unique_ptr<IMS::Store>(new IMS::Store(partition.c_str()));
     _stream = std::unique_ptr<IMS::Stream>(new IMS::Stream(*_store,
-                TIMEOUT));
+                _barrier_timeout));
 }
 
 void Notification::start() {
     _stream.reset();
     _stream = std::unique_ptr<IMS::Stream>(new IMS::Stream(*_store,
-                TIMEOUT));
-    LOG_INF << "Notification stream started";
+                _barrier_timeout));
+    LOG_INF << "Notification stream started with barrier_timeout = " << _barrier_timeout;
 }
 
 void Notification::block(Info::MODE mode, const std::string image_id, const std::string folder) {
@@ -61,10 +59,10 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         // is null, there were no pending images after TIMEOUT so we thrown an exception.
         //
         LOG_DBG << "Trying to read stream to find image " << image_id;
-        IMS::Image image(*_store, *_stream, TIMEOUT);
+        IMS::Image image(*_store, *_stream, _barrier_timeout);
         if (!image)  {
             std::ostringstream err;
-            err << "Wasn't able to read image in "<< TIMEOUT_SECONDS << " seconds";
+            err << "Wasn't able to read image in "<< _barrier_timeout*1000*1000 << " seconds";
             LOG_CRT << err.str();
             throw L1::CannotFetchPixel(err.str());
         }
@@ -103,7 +101,7 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         //
         if (!image) {
             std::ostringstream err;
-            err << "image " << image_id << " was not found after blocking " << TIMEOUT_SECONDS << " blocking at barrier";
+            err << "image " << image_id << " was not found after blocking " << _barrier_timeout*1000*1000 << " blocking at barrier";
             LOG_CRT << err.str();
             throw L1::CannotFetchPixel(err.str());
         }
