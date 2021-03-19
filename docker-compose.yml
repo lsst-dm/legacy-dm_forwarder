@@ -26,6 +26,7 @@ services:
       - USER=iip
       - HOME=/home/iip
       - KRB5CCNAME=${KRB5CCNAME_FILE}
+      - IIP_CONFIG_DIR=${IIP_CONFIG_DIR}
     network_mode: host
     pid: host
     tty: true
