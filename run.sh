@@ -2,7 +2,7 @@
 
 export IIP_UID=$(id -u iip)
 export IIP_GID=$(id -g iip)
-export KRB5CCNAME=/tmp/krb5cc_$(id -u iip)
+export KRB5CCNAME_FILE=/tmp/krb5cc_$(id -u iip)
 
 error_msg="$0: missing argument: -d [latiss|comcam] -s [summit|ncsa] -c container_version"
 
@@ -43,5 +43,6 @@ echo "IIP_CONFIG_DIR="$IIP_CONFIG_DIR
 echo "IIP_DEVICE = "$IIP_DEVICE
 echo "IIP_SITE = "$IIP_SITE
 echo "IIP_CONTAINER_VERSION = "$IIP_CONTAINER_VERSION
+echo "KRB5CCNAME_FILE= "$KRB5CCNAME_FILE
 
 docker-compose -f docker-compose.yml up -d dm_forwarder

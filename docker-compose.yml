@@ -2,8 +2,8 @@ version: "3.7"
 
 services:
   dm_forwarder:
-    container_name: forwarder_test
-    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${IIP_CONTAINER_VERSION}
+    container_name: dm_forwarder
+    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:dm_forwarder
     user: ${IIP_UID}:${IIP_GID}
     build:
       context: ./
@@ -25,7 +25,7 @@ services:
     environment:
       - USER=iip
       - HOME=/home/iip
-      - CONFIG_VERSION=${IIP_DEVICE}_${IIP_SITE}
+      - KRB5CCNAME=${KRB5CCNAME_FILE}
     network_mode: host
     pid: host
     tty: true
