@@ -91,7 +91,6 @@ RUN rm -rf /app/build 2> /dev/null && \
 FROM centos:7
 WORKDIR /app
 
-ENV IIP_CONFIG_DIR=/opt/lsst/dm_forwarder/config
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/lsst/daq/x86/lib:/usr/lib:/usr/lib64
 
 COPY --from=builder /usr/lib64/librabbitmq.so /usr/lib/
@@ -123,4 +122,7 @@ RUN mkdir /var/tmp/data && \
     chmod -R 777 /var/tmp/data && \
     chmod 777 /var/log/iip
 
-CMD ["/app/bin/dm_forwarder"]
+COPY etc/config/ /opt/lsst/dm_forwarder/config/
+
+ENTRYPOINT [ "tail", "-f", "/dev/null" ]
+#CMD ["/app/bin/dm_forwarder"]
