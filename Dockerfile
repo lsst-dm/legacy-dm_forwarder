@@ -124,5 +124,5 @@ RUN mkdir /var/tmp/data && \
 
 COPY etc/config/ /opt/lsst/dm_forwarder/config/
 
-ENTRYPOINT [ "tail", "-f", "/dev/null" ]
-#CMD ["/app/bin/dm_forwarder"]
+#ENTRYPOINT [ "tail", "-f", "/dev/null" ]
+CMD ["/app/bin/dm_forwarder"]
