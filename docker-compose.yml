@@ -21,7 +21,7 @@ services:
       - /home/iip:/home/iip
       - /etc/passwd:/etc/passwd
       - /etc/group:/etc/group
-      - /tmp/:/tmp
+      - /tmp:/tmp
     environment:
       - USER=iip
       - HOME=/home/iip

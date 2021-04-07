@@ -11,13 +11,13 @@ container_version=$1
 
 docker run \
     -d \
-    -u `id -u $FORWARDER_USER`:`id -g $FORWARDER_USER` \
+    -u `id -u iip`:`id -g iip` \
     --name dm_forwarder \
     --network host \
     --pid host \
-    -v /home/$FORWARDER_USER/.ssh:/home/$FORWARDER_USER/.ssh \
-    -v /home/$FORWARDER_USER/.lsst:/home/$FORWARDER_USER/.lsst \
-    -v /var/tmp/data:/var/tmp/data \
+    -v /home/iip/.ssh:/home/iip/.ssh \
+    -v /home/iip/.lsst:/home/iip/.lsst \
+    -v /tmp:/tmp \
     -v /var/log/iip:/var/log/iip \
     -v /etc/passwd:/etc/passwd \
     -v /etc/group:/etc/group \
