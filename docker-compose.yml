@@ -1,8 +1,9 @@
 version: "3.7"
 
 x-environment: &service-environment
-  - IIP_CONFIG_DIR=${IIP_CONFIG_DIR}
-  - KRB5CCNAME_FILE=${KRB5CCNAME_FILE}
+  environment: 
+    - IIP_CONFIG_DIR=${IIP_CONFIG_DIR}
+    - KRB5CCNAME_FILE=${KRB5CCNAME_FILE}
 
 x-service-volumes: &service-volumes
   volumes:

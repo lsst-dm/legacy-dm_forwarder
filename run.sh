@@ -4,11 +4,13 @@ export IIP_UID=$(id -u iip)
 export IIP_GID=$(id -g iip)
 export KRB5CCNAME_FILE=/tmp/krb5cc_$(id -u iip)
 
-error_msg="$0: missing argument: -d [latiss|comcam] -s [summit|ncsa]"
+error_msg="$0: missing argument: -d [latiss|comcam] -s [summit|nts]"
 
 export IIP_CONFIG_DIR=
 export IIP_DEVICE=
 export IIP_SITE=
+export IIP_CONTAINER=
+
 while getopts d:s: option
 do
 case "${option}"
@@ -21,10 +23,10 @@ d)
         exit 1
     fi;;
 s) 
-    if [ "$OPTARG" = "summit" ] || [ "$OPTARG" = "ncsa" ]; then
+    if [ "$OPTARG" = "summit" ] || [ "$OPTARG" = "nts" ]; then
         IIP_SITE=${OPTARG}
     else
-        echo "-s argument must be summit or ncsa"
+        echo "-s argument must be summit or nts"
         exit 1
     fi;;
 esac
@@ -35,11 +37,18 @@ if [[ -z $IIP_DEVICE ]] || [[ -z $IIP_SITE ]]; then
     exit 1
 fi
 
+if [ "$OPTARG" = "summit" ]; then
+    IIP_CONTAINER=fwd_summit
+else 
+    IIP_CONTAINER=fwd_${IIP_SITE}_${IIP_DEVICE}
+fi;
+
 IIP_CONFIG_DIR=/opt/lsst/dm_forwarder/config/$IIP_SITE/$IIP_DEVICE
 
 echo "IIP_CONFIG_DIR="$IIP_CONFIG_DIR
 echo "IIP_DEVICE = "$IIP_DEVICE
 echo "IIP_SITE = "$IIP_SITE
 echo "KRB5CCNAME_FILE= "$KRB5CCNAME_FILE
+echo "IIP_CONTAINER= "$IIP_CONTAINER
 
-docker-compose -f docker-compose.yml up -d fwd_nts_comcam
+docker-compose -f docker-compose.yml up -d $IIP_CONTAINER
