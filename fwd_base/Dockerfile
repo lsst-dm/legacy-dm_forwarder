@@ -123,6 +123,3 @@ RUN mkdir /var/tmp/data && \
     chmod 777 /var/log/iip
 
 COPY etc/config/ /opt/lsst/dm_forwarder/config/
-
-#ENTRYPOINT [ "tail", "-f", "/dev/null" ]
-CMD ["/app/bin/dm_forwarder"]

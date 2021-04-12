@@ -1,0 +1,1 @@
+export FWD_BASE_VERSION=1.8.1

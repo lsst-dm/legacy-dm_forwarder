@@ -42,4 +42,4 @@ echo "IIP_DEVICE = "$IIP_DEVICE
 echo "IIP_SITE = "$IIP_SITE
 echo "KRB5CCNAME_FILE= "$KRB5CCNAME_FILE
 
-docker-compose -f docker-compose.yml up -d dm_forwarder
+docker-compose -f docker-compose.yml up -d fwd_nts_comcam

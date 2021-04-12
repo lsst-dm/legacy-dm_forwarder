@@ -1,12 +1,26 @@
 version: "3.7"
 
+x-environment: &service-environment
+  - IIP_CONFIG_DIR=${IIP_CONFIG_DIR}
+  - KRB5CCNAME_FILE=${KRB5CCNAME_FILE}
+
+x-service-volumes: &service-volumes
+  volumes:
+    - /var/tmp/data:/var/tmp/data
+    - /var/log/iip:/var/log/iip
+    - /home/iip:/home/iip
+    - /tmp:/tmp
+
+x-host-settings: &host-settings
+  network_mode: host
+  pid: host
+  tty: true
+
 services:
-  dm_forwarder:
-    container_name: dm_forwarder
-    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:dm_forwarder
-    user: ${IIP_UID}:${IIP_GID}
+  fwd_base:
+    image: ts-dockerhub.lsst.org/lsstts/fwd_base:${FWD_BASE_VERSION}
     build:
-      context: ./
+      context: ./fwd_base
       args:
         - cmakeURL=https://github.com/Kitware/CMake/releases/download/v3.15.4/cmake-3.15.4-Linux-x86_64.sh
         - bbcpURL=https://www.slac.stanford.edu/~abh/bbcp/bbcp.git/
@@ -15,18 +29,36 @@ services:
         - yamlcppURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/yaml-cpp/yaml-cpp-0.6.3.tar.gz
         - cfitsioURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/cfitsio/cfitsio-3.450.tar.gz
         - daqURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/daq/R4-V4.11_ds100.tgz
-    volumes:
-      - /var/tmp/data:/var/tmp/data
-      - /var/log/iip:/var/log/iip
-      - /home/iip:/home/iip
-      - /etc/passwd:/etc/passwd
-      - /etc/group:/etc/group
-      - /tmp:/tmp
-    environment:
-      - USER=iip
-      - HOME=/home/iip
-      - KRB5CCNAME=${KRB5CCNAME_FILE}
-      - IIP_CONFIG_DIR=${IIP_CONFIG_DIR}
-    network_mode: host
-    pid: host
-    tty: true
+
+  fwd_nts_comcam:
+    image: ts-dockerhub.lsst.org/lsstts/fwd_nts_comcam:${FWD_BASE_VERSION}
+    container_name: fwd_nts_comcam
+    build:
+      context: ./fwd_nts_comcam
+      args:
+        - FWD_BASE_VERSION
+    <<: *service-volumes
+    <<: *service-environment
+    <<: *host-settings
+
+  fwd_nts_latiss:
+    image: ts-dockerhub.lsst.org/lsstts/fwd_nts_latiss:${FWD_BASE_VERSION}
+    container_name: fwd_nts_latiss
+    build:
+      context: ./fwd_nts_latiss
+      args:
+        - FWD_BASE_VERSION
+    <<: *service-volumes
+    <<: *service-environment
+    <<: *host-settings
+
+  fwd_summit:
+    image: ts-dockerhub.lsst.org/lsstts/fwd_summmit:${FWD_BASE_VERSION}
+    container_name: fwd_summit
+    build:
+      context: ./fwd_summit
+      args:
+        - FWD_BASE_VERSION
+    <<: *service-volumes
+    <<: *service-environment
+    <<: *host-settings
