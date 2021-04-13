@@ -123,3 +123,12 @@ RUN mkdir /var/tmp/data && \
     chmod 777 /var/log/iip
 
 COPY etc/config/ /opt/lsst/dm_forwarder/config/
+
+RUN groupadd -g 61003 iip
+RUN useradd -u 61003 -g 61003 iip
+
+USER iip
+
+ENTRYPOINT [ "tail", "-f", "/dev/null" ]
+#CMD ["/app/bin/dm_forwarder"]
+

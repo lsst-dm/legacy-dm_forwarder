@@ -40,7 +40,8 @@ fi
 if [ "$OPTARG" = "summit" ]; then
     IIP_CONTAINER=fwd_summit
 else 
-    IIP_CONTAINER=fwd_${IIP_SITE}_${IIP_DEVICE}
+    # IIP_CONTAINER=fwd_${IIP_SITE}_${IIP_DEVICE}
+    IIP_CONTAINER=fwd_nts
 fi;
 
 IIP_CONFIG_DIR=/opt/lsst/dm_forwarder/config/$IIP_SITE/$IIP_DEVICE
