@@ -54,7 +54,7 @@ services:
     <<: *host-settings
 
   fwd_summit:
-    image: ts-dockerhub.lsst.org/lsstts/fwd_summmit:${FWD_BASE_VERSION}
+    image: ts-dockerhub.lsst.org/lsstts/fwd_summit:${FWD_BASE_VERSION}
     container_name: fwd_summit
     build:
       context: ./fwd_summit
