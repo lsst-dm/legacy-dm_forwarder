@@ -37,7 +37,7 @@ if [[ -z $IIP_DEVICE ]] || [[ -z $IIP_SITE ]]; then
     exit 1
 fi
 
-if [ "$OPTARG" = "summit" ]; then
+if [ "$IIP_SITE" = "summit" ]; then
     IIP_CONTAINER=fwd_summit
 else 
     # IIP_CONTAINER=fwd_${IIP_SITE}_${IIP_DEVICE}
