@@ -129,6 +129,6 @@ RUN useradd -u 61003 -g 61003 iip
 
 USER iip
 
-ENTRYPOINT [ "tail", "-f", "/dev/null" ]
-#CMD ["/app/bin/dm_forwarder"]
+#ENTRYPOINT [ "tail", "-f", "/dev/null" ]
+CMD ["/app/bin/dm_forwarder"]
 
