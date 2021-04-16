@@ -1,0 +1,101 @@
+# name of forwarder
+NAME: f99
+
+BARRIER_TIMEOUT: 30
+
+# logging directory
+LOGGING_DIR: /var/log/iip
+
+# working directory where cfitio and header files are fetched/assembled
+WORK_DIR: /var/tmp/data
+
+# daq partition name
+PARTITION: ats
+FOLDER: raw
+
+# NEW: forwarder mode [live|catchup]
+MODE: live
+
+## LCA-13501 segment order
+#SEGMENT_ORDER: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+#
+## @deprecated_soon
+## daq readout order for each sensor, currently WFS is the only one active. This
+## will be deprecated because readout order depends on Science, Wavefront, or
+## Guiding Sensor but not on vendor type such as ITL, E2V or STA.
+#ITL: [ 00, 01, 02, 03, 04, 05, 06, 07, 10, 11, 12, 13, 14, 15, 16, 17 ]
+#E2V: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+#STA: [ 00, 01, 02, 03, 04, 05, 06, 07, 10, 11, 12, 13, 14, 15, 16, 17 ]
+#WFS: [ 00, 01, 02, 03, 04, 05, 06, 07, 17, 16, 15, 14, 13, 12, 11, 10 ]
+
+PATTERN:
+    DATA_SEGMENT_NAME:
+        science: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+        guide: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+        wavefront: [ 10, 11, 12, 13, 14, 15, 16, 17, 07, 06, 05, 04, 03, 02, 01, 00 ]
+    DATA_SEGMENT:
+        science: [ 8, 9, 10, 11, 12, 13, 14, 15, 7, 6, 5, 4, 3, 2, 1, 0 ]
+        guide: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]
+        wavefront: [ 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ]
+    DATA_SENSOR:
+        science: [ 2, 1, 0 ]
+        guide: [ 1, 0 ]
+        wavefront: [ 1, 0 ]
+    XOR:
+        science: 0x1FFFF
+        guide: 0x20000
+        wavefront: 0x20000
+
+# daq location patterns in the hardware. These values are pre-defined here so
+# that forwarder can throw exception when someone gives wrong "raft/ccd"
+# location. Currently daq hardware segfaults when wrong argument is given to
+# constructor
+ats: [ 00/0 ]
+comcam: [ 22/0, 22/1, 22/2 ]
+
+# rabbitMQ broker address
+# this is the broker address for Chile
+#BASE_BROKER_ADDR: 139.229.170.34:5672/%2ftest_at
+# this is the broker address for NTS
+BASE_BROKER_ADDR: 141.142.238.15:5672/%2ftest_at
+
+# @deprecated_soon
+# forwarder queue to listen to RabbitMQ messages. This is static queue, meaning
+# someone has to create this queue in advance for forwarder to work. In the
+# future, forwarder is gonna create queues on the fly when it starts up.
+CONSUME_QUEUE: f99_consume
+
+# rabbitMQ archivecontroller queue
+ARCHIVE_QUEUE: archive_ctrl_consume
+
+# telemetry queue for publishing telemetry messages from forwarder
+TELEMETRY_QUEUE: telemetry_queue
+
+# redis database configuration for handling heartbeat and storing information
+# next three lines are the old configuration
+#REDIS_HOST: 139.229.170.34
+#REDIS_PORT: 6379
+#REDIS_DB: 15
+REDIS:
+    REMOTE:
+        HOST: 141.142.238.15
+        PORT: 6379
+        DB: 15
+    LOCAL:
+        HOST: 141.142.238.15
+        PORT: 6379
+        DB: 2
+
+# timeout for forwarder to send keepalive to associated CSC
+SECONDS_TO_UPDATE: 3
+
+# timeout for forwarder to check keepalive of associated CSC
+SECONDS_TO_EXPIRE: 10
+
+# file transfer protocol
+# bbcp is listed as an example. Another option is scp
+# -f, forces the copy
+# -n, does not use DNS to resolve IP address
+# -s, number of streams to use
+#XFER_OPTION: bbcp -f -n -s 1 -i ~/.ssh/id_rsa
+XFER_OPTION: scp -i ~/.ssh/id_rsa

@@ -1,1 +1,0 @@
-export DM_FORWARDER_VERSION=1.8.0

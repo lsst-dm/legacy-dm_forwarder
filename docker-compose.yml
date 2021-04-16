@@ -1,11 +1,36 @@
 version: "3.7"
 
+x-environment: &service-environment
+  environment: 
+    - IIP_CONFIG_DIR=${IIP_CONFIG_DIR}
+    - KRB5CCNAME=${KRB5CCNAME_FILE}
+
+x-service-volumes: &service-volumes
+  volumes:
+    - /var/tmp/data:/var/tmp/data
+    - /var/log/iip:/var/log/iip
+    - /home/iip:/home/iip
+    - /tmp:/tmp
+
+x-service-nts-volumes: &service-nts-volumes
+  volumes:
+    - /var/tmp/data:/var/tmp/data
+    - /var/log/iip:/var/log/iip
+    - /home/iip:/home/iip
+    - /tmp:/tmp
+    - /etc/passwd:/etc/passwd
+    - /etc/group:/etc/group
+
+x-host-settings: &host-settings
+  network_mode: host
+  pid: host
+  tty: true
+
 services:
   dm_forwarder:
-    container_name: dm_forwarder
     image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
     build:
-      context: ./
+      context: ./dm_forwarder
       args:
         - cmakeURL=https://github.com/Kitware/CMake/releases/download/v3.15.4/cmake-3.15.4-Linux-x86_64.sh
         - bbcpURL=https://www.slac.stanford.edu/~abh/bbcp/bbcp.git/
@@ -14,55 +39,18 @@ services:
         - yamlcppURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/yaml-cpp/yaml-cpp-0.6.3.tar.gz
         - cfitsioURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/cfitsio/cfitsio-3.450.tar.gz
         - daqURL=http://lsst-web.ncsa.illinois.edu/~srp/packages/daq/R4-V4.11_ds100.tgz
-    volumes:
-      - dm_forwarder_vol:/var/tmp/data
-      - dm_forwarder_vol:/var/log/iip
-      - ./etc/environment/.lsst:/root/.lsst
-      - ./etc/environment/config:/opt/lsst/dm_forwarder/config
-    networks:
-      dm_forwarder_net: {}
-    tty: true
 
-  redis:
-    image: redis
-    container_name: redis
-    hostname: my-redis
-    ports:
-      - "6379:6379"
-    networks:
-      dm_forwarder_net: {}
+  fwd_nts:
+    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
+    container_name: fwd_nts
+    user: ${IIP_UID}:${IIP_GID}
+    <<: *service-nts-volumes
+    <<: *service-environment
+    <<: *host-settings
 
-  rabbitmq:
-    build:
-      context: ./etc/docker/rabbitmq
-    container_name: rabbitmq
-    hostname: my-rabbit
-    ports:
-      - "5672:5672"
-    networks:
-      dm_forwarder_net: {}
-
-  test:
-    image: lsstts/dm_forwarder_test:${DM_FORWARDER_VERSION}
-    build:
-      context: ./etc/docker/tests
-      args:
-        - DM_FORWARDER_VERSION=${DM_FORWARDER_VERSION}
-    environment:
-      LD_LIBRARY_PATH: /app/lib
-    volumes:
-      - dm_forwarder_vol:/var/tmp/data
-      - dm_forwarder_vol:/var/log/iip
-      - ./etc/environment/.lsst:/root/.lsst
-      - ./etc/environment/config:/opt/lsst/dm_forwarder/config
-    depends_on:
-      - redis
-      - rabbitmq
-    networks:
-      dm_forwarder_net: {}
-
-volumes:
-  dm_forwarder_vol:
-
-networks:
-  dm_forwarder_net:
+  fwd_summit:
+    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
+    container_name: fwd_summit
+    <<: *service-volumes
+    <<: *service-environment
+    <<: *host-settings
