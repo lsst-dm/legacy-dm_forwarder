@@ -32,7 +32,7 @@ s)
 esac
 done
 
-if [[ -z $IIP_DEVICE ]] || [[ -z $IIP_SITE ]]; then
+if [[ -z "$IIP_DEVICE" ]] || [[ -z "$IIP_SITE" ]]; then
     echo $error_msg
     exit 1
 fi
@@ -46,10 +46,10 @@ fi;
 
 IIP_CONFIG_DIR=/opt/lsst/dm_forwarder/config/$IIP_SITE/$IIP_DEVICE
 
-echo "IIP_CONFIG_DIR="$IIP_CONFIG_DIR
+echo "IIP_CONFIG_DIR = "$IIP_CONFIG_DIR
 echo "IIP_DEVICE = "$IIP_DEVICE
 echo "IIP_SITE = "$IIP_SITE
-echo "KRB5CCNAME_FILE= "$KRB5CCNAME_FILE
-echo "IIP_CONTAINER= "$IIP_CONTAINER
+echo "KRB5CCNAME_FILE = "$KRB5CCNAME_FILE
+echo "IIP_CONTAINER = "$IIP_CONTAINER
 
 docker-compose -f docker-compose.yml up -d $IIP_CONTAINER
