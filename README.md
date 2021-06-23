@@ -7,5 +7,7 @@ Forwarder application for assembling and transferring fitsfiles
 
 ## Starting dm_forwarder
 run:
+
     . ./versions.sh
+    
     ./run_forwarder.sh -d [latiss|comcam] -s [summit|nts]
