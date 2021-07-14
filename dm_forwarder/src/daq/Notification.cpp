@@ -93,7 +93,7 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         // We have the Image, the metadata matches, so now we block for the pixels.
         LOG_DBG << "Barrier blocking for image " << image_id;
         IMS::Barrier barrier(image);
-        barrier.block();
+        barrier.block(*_stream);
         LOG_DBG << "Barrier released for image " << image_id;
         //
         // if image is null, then there was a TIMEOUT, which means the pixels

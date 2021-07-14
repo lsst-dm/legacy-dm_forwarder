@@ -37,7 +37,7 @@
 #include <forwarder/YAMLFormatter.h>
 #include <forwarder/miniforwarder.h>
 
-#define TIMEOUT 15*1000*1000
+#define MF_TIMEOUT 15*1000*1000
 
 namespace fs = boost::filesystem;
 
@@ -48,7 +48,7 @@ miniforwarder::miniforwarder(const std::string& config,
     std::string work_dir, ip_host, redis_host_remote,
             redis_host_local, xfer_option;
     int redis_port_remote, redis_db_remote, redis_port_local, redis_db_local;
-    int _barrier_timeout = TIMEOUT;
+    int _barrier_timeout = MF_TIMEOUT;
     YAML::Node pattern;
     try {
         int val = _config_root["BARRIER_TIMEOUT"].as<int>();
