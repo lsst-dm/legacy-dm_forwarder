@@ -1,6 +1,8 @@
 # name of forwarder
 NAME: f99
 
+BARRIER_TIMEOUT: 30
+
 # logging directory
 LOGGING_DIR: /var/log/iip
 
@@ -35,7 +37,7 @@ PATTERN:
         wavefront: [ 1, 0 ]
     XOR:
         science: 0x1FFFF
-        guide: 0x200000
+        guide: 0x20000
         wavefront: 0x20000
 
 # daq location patterns in the hardware. These values are pre-defined here so
