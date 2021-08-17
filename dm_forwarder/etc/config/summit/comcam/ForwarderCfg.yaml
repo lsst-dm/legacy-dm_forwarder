@@ -1,6 +1,8 @@
 # name of forwarder
 NAME: f99
 
+BARRIER_TIMEOUT: 30
+
 # logging directory
 LOGGING_DIR: /var/log/iip
 

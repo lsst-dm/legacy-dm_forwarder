@@ -124,7 +124,12 @@ void YAMLFormatter::write_key(fitsfile* fptr, const YAML::Node& n) {
                  &status);
     }
     else if (val_d) {
-        fits_write_key(fptr, TDOUBLE, key, &(*val_d), comment, &status);
+        if (isnan(*val_d)) {  // check to be to see if this is NaN
+            // if it is, write out a blank for the value.
+            fits_write_key_null(fptr, key, comment, &status);
+        } else {
+            fits_write_key(fptr, TDOUBLE, key, &(*val_d), comment, &status);
+        }
     }
     else if (val_s) {
         fits_write_key(fptr, TSTRING, key, (void *)(*val_s).c_str(), comment,
