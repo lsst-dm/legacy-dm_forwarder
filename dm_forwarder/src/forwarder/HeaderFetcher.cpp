@@ -27,7 +27,7 @@
 
 namespace fs = boost::filesystem;
 
-long TIMEOUT = 2L;
+long HF_TIMEOUT = 2L;
 
 /**
  * Initialize HeaderFetcher for pulling header information
@@ -64,7 +64,7 @@ void HeaderFetcher::fetch(const std::string& url,
         curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, error_buffer);
         curl_easy_setopt(handle, CURLOPT_FAILONERROR, 1);
         curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
-        curl_easy_setopt(handle, CURLOPT_TIMEOUT, TIMEOUT);
+        curl_easy_setopt(handle, CURLOPT_TIMEOUT, HF_TIMEOUT);
 
         CURLcode status = curl_easy_perform(handle);
         if (status != CURLE_OK) {
