@@ -31,7 +31,7 @@
 #include "daq/WavefrontBuffer.h"
 #include "daq/GuidingBuffer.h"
 
-#define SAMPLES 8192
+#define SAMPLES 195072
 
 DAQDecoder::DAQDecoder(IMS::Image& img, const DAQ::LocationSet& filter)
       : IMS::Decoder(img, filter) {
