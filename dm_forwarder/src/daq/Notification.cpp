@@ -62,7 +62,7 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         IMS::Image image(*_store, *_stream, _barrier_timeout);
         if (!image)  {
             std::ostringstream err;
-            err << "Wasn't able to read image in "<< _barrier_timeout*1000*1000 << " seconds";
+            err << "Wasn't able to read image in "<< _barrier_timeout << " microseconds";
             LOG_CRT << err.str();
             throw L1::CannotFetchPixel(err.str());
         }
@@ -93,7 +93,7 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         // We have the Image, the metadata matches, so now we block for the pixels.
         LOG_DBG << "Barrier blocking for image " << image_id;
         IMS::Barrier barrier(image);
-        barrier.block(*_stream);
+        barrier.block(*_stream, _barrier_timeout);
         LOG_DBG << "Barrier released for image " << image_id;
         //
         // if image is null, then there was a TIMEOUT, which means the pixels
@@ -101,7 +101,7 @@ void Notification::block(Info::MODE mode, const std::string image_id, const std:
         //
         if (!image) {
             std::ostringstream err;
-            err << "image " << image_id << " was not found after blocking " << _barrier_timeout*1000*1000 << " blocking at barrier";
+            err << "image " << image_id << " was not found after blocking " << _barrier_timeout << " microseconds at barrier";
             LOG_CRT << err.str();
             throw L1::CannotFetchPixel(err.str());
         }
