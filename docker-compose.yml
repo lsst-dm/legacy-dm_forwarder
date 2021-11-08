@@ -7,6 +7,7 @@ x-environment: &service-environment
 
 x-service-volumes: &service-volumes
   volumes:
+    - ${LOCAL_CONFIG_DIR}:${IIP_CONFIG_DIR}
     - /var/tmp/data:/var/tmp/data
     - /var/log/iip:/var/log/iip
     - /home/iip:/home/iip
@@ -51,6 +52,20 @@ services:
   fwd_summit:
     image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
     container_name: fwd_summit
+    <<: *service-volumes
+    <<: *service-environment
+    <<: *host-settings
+
+  fwd_tucson_latiss:
+    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
+    container_name: fwd_tucson_latiss
+    <<: *service-volumes
+    <<: *service-environment
+    <<: *host-settings
+
+  fwd_tucson_comcam:
+    image: ts-dockerhub.lsst.org/lsstts/dm_forwarder:${DM_FORWARDER_VERSION}
+    container_name: fwd_tucson_comcam
     <<: *service-volumes
     <<: *service-environment
     <<: *host-settings
