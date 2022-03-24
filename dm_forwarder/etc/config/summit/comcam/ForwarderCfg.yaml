@@ -49,7 +49,7 @@ cam-comcam: [ 22/0, 22/1, 22/2 ]
 comcam: [ 22/0, 22/1, 22/2 ]
 
 # rabbitMQ broker address
-BASE_BROKER_ADDR: 139.229.165.1:5672/%2ftest_cc
+BASE_BROKER_ADDR: comcam-archiver.cp.lsst.org:5672/%2ftest_cc
 
 # @deprecated_soon
 # forwarder queue to listen to RabbitMQ messages. This is static queue, meaning
@@ -66,11 +66,11 @@ TELEMETRY_QUEUE: telemetry_queue
 # redis database configuration for handling heartbeat and storing information
 REDIS:
     REMOTE:
-        HOST: 139.229.165.1
+        HOST: comcam-archiver.cp.lsst.org
         PORT: 6379
         DB: 14
     LOCAL:
-        HOST: 139.229.165.1
+        HOST: comcam-archiver.cp.lsst.org
         PORT: 6379
         DB: 1
 

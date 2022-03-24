@@ -49,7 +49,7 @@ ncsa-comcam: [ 22/0, 22/1, 22/2 ]
 cam-comcam: [ 22/0, 22/1, 22/2 ]
 
 # rabbitMQ broker address
-BASE_BROKER_ADDR: atarchiver.cp.lsst.org:5672/%2ftest_at
+BASE_BROKER_ADDR: auxtel-archiver.cp.lsst.org:5672/%2ftest_at
 #BASE_BROKER_ADDR: 141.142.238.15:5672/test_cu
 
 # @deprecated_soon
@@ -68,11 +68,11 @@ TELEMETRY_QUEUE: telemetry_queue
 
 REDIS:
     REMOTE:
-        HOST: atarchiver.cp.lsst.org
+        HOST: auxtel-archiver.cp.lsst.org
         PORT: 6379
         DB: 15
     LOCAL:
-        HOST: atarchiver.cp.lsst.org
+        HOST: auxtel-archiver.cp.lsst.org
         PORT: 6379
         DB: 2
 
